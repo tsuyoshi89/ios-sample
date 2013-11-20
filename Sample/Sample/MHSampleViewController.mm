@@ -38,6 +38,17 @@
 
     CGFloat offsetY = 50;
     
+    //case 0
+    UIImageView *originalView = [[UIImageView alloc] initWithImage:originalImage];
+    [originalView setFrame:CGRectMake(20, 10 + offsetY, originalImage.size.width, originalImage.size.height)];
+    offsetY += originalImage.size.height + 10;
+
+    //case 05
+    UIImageView *scaleView = [[UIImageView alloc] initWithImage:originalImage];
+    [scaleView setFrame:CGRectMake(20, 10 + offsetY, 280, 100)];
+    [scaleView setContentMode:UIViewContentModeScaleToFill];
+    offsetY += 110;
+
     //case 1
     UIImageView *resizableView = [[UIImageView alloc] initWithImage:resizableImage];
     [resizableView setContentMode:UIViewContentModeScaleToFill];
@@ -58,26 +69,39 @@
     [myResizedView setFrame:CGRectMake(20, 230 + offsetY, 280, 100)];
 
     
+    [self.view addSubview:originalView];
+    [self.view addSubview:scaleView];
     [self.view addSubview:resizableView];
     [self.view addSubview:resizedView];
     [self.view addSubview:myResizedView];
-
     
+    UILabel *label0 = [[UILabel alloc] init];
+    label0.text = @"オリジナル";
+    [label0 sizeToFit];
+    label0.center = originalView.center;
+
+    UILabel *label05 = [[UILabel alloc] init];
+    label05.text = @"オリジナルをScaleToFillで拡大";
+    [label05 sizeToFit];
+    label05.center = scaleView.center;
+
     UILabel *label1 = [[UILabel alloc] init];
-    label1.text = @"resizableImageそのまま";
+    label1.text = @"resizableImageで拡大";
     [label1 sizeToFit];
     label1.center = resizableView.center;
 
     UILabel *label2 = [[UILabel alloc] init];
-    label2.text = @"resizableImageを拡大描画";
+    label2.text = @"resizableImageを描画して拡大";
     [label2 sizeToFit];
     label2.center = resizedView.center;
 
     UILabel *label3 = [[UILabel alloc] init];
-    label3.text = @"自力でタイリング";
+    label3.text = @"自力でタイリングして拡大";
     [label3 sizeToFit];
     label3.center = myResizedView.center;
     
+    [self.view addSubview:label0];
+    [self.view addSubview:label05];
     [self.view addSubview:label1];
     [self.view addSubview:label2];
     [self.view addSubview:label3];

@@ -19,6 +19,9 @@
 		48D282CC183C3AF0004574F9 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D282B4183C3AF0004574F9 /* UIKit.framework */; };
 		48D282D4183C3AF0004574F9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 48D282D2183C3AF0004574F9 /* InfoPlist.strings */; };
 		48D282D6183C3AF0004574F9 /* SampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 48D282D5183C3AF0004574F9 /* SampleTests.m */; };
+		48D282E2183C3C1F004574F9 /* MHTileImage.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48D282E1183C3C1F004574F9 /* MHTileImage.mm */; };
+		48D282E5183C429F004574F9 /* MHSampleViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48D282E4183C429F004574F9 /* MHSampleViewController.mm */; };
+		48D282E8183C43A7004574F9 /* hukidashi@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 48D282E7183C43A7004574F9 /* hukidashi@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +51,12 @@
 		48D282D1183C3AF0004574F9 /* SampleTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SampleTests-Info.plist"; sourceTree = "<group>"; };
 		48D282D3183C3AF0004574F9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		48D282D5183C3AF0004574F9 /* SampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleTests.m; sourceTree = "<group>"; };
+		48D282DF183C3BD2004574F9 /* MHCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MHCommon.h; sourceTree = "<group>"; };
+		48D282E0183C3C1F004574F9 /* MHTileImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHTileImage.h; sourceTree = "<group>"; };
+		48D282E1183C3C1F004574F9 /* MHTileImage.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHTileImage.mm; sourceTree = "<group>"; };
+		48D282E3183C429F004574F9 /* MHSampleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHSampleViewController.h; sourceTree = "<group>"; };
+		48D282E4183C429F004574F9 /* MHSampleViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHSampleViewController.mm; sourceTree = "<group>"; };
+		48D282E7183C43A7004574F9 /* hukidashi@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "hukidashi@2x.png"; path = "Resources/hukidashi@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +86,7 @@
 		48D282A4183C3AF0004574F9 = {
 			isa = PBXGroup;
 			children = (
+				48D282E6183C439F004574F9 /* Resources */,
 				48D282B6183C3AF0004574F9 /* Sample */,
 				48D282CF183C3AF0004574F9 /* SampleTests */,
 				48D282AF183C3AF0004574F9 /* Frameworks */,
@@ -111,6 +121,11 @@
 				48D282C0183C3AF0004574F9 /* MHAppDelegate.mm */,
 				48D282C2183C3AF0004574F9 /* Images.xcassets */,
 				48D282B7183C3AF0004574F9 /* Supporting Files */,
+				48D282DF183C3BD2004574F9 /* MHCommon.h */,
+				48D282E0183C3C1F004574F9 /* MHTileImage.h */,
+				48D282E1183C3C1F004574F9 /* MHTileImage.mm */,
+				48D282E3183C429F004574F9 /* MHSampleViewController.h */,
+				48D282E4183C429F004574F9 /* MHSampleViewController.mm */,
 			);
 			path = Sample;
 			sourceTree = "<group>";
@@ -142,6 +157,14 @@
 				48D282D2183C3AF0004574F9 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		48D282E6183C439F004574F9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				48D282E7183C43A7004574F9 /* hukidashi@2x.png */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -222,6 +245,7 @@
 			files = (
 				48D282BB183C3AF0004574F9 /* InfoPlist.strings in Resources */,
 				48D282C3183C3AF0004574F9 /* Images.xcassets in Resources */,
+				48D282E8183C43A7004574F9 /* hukidashi@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +264,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48D282E2183C3C1F004574F9 /* MHTileImage.mm in Sources */,
+				48D282E5183C429F004574F9 /* MHSampleViewController.mm in Sources */,
 				48D282BD183C3AF0004574F9 /* main.m in Sources */,
 				48D282C1183C3AF0004574F9 /* MHAppDelegate.mm in Sources */,
 			);

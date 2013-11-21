@@ -26,8 +26,6 @@ typedef enum {
 - (void)cancel;
 - (void)wait:(double)seconds;
 
-+ (void)enableBackgroundTask:(BOOL)enable;
-
 + (void)runInMainThread:(void (^)(void))block;
 + (void)runInWorkerThread:(void (^)(void))block;
 + (void)doRunLoop:(double)time;

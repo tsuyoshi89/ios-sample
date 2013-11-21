@@ -34,12 +34,20 @@ private:
 }
 
 @property (nonatomic, readonly, assign) BOOL inBackground;
+@property (nonatomic, readonly) NSMutableArray *backgroundJobs;
 @end
 
 @implementation MHJobManager {
-    NSMutableArray *_backgroundJobs;
     UIBackgroundTaskIdentifier _backgroundTaskIdentifier;
     NSCondition *_cond;
+}
+
++ (MHJobManager *)sharedInstance {
+    static MHJobManager *instance;
+    if (!instance) {
+        instance = [[MHJobManager alloc] init];
+    }
+    return instance;
 }
 
 - (id)init {
@@ -96,22 +104,8 @@ private:
 
 @end
 
-static MHJobManager *sJobManager;
-
 @implementation MHJob {
     NSCondition *_cond;
-}
-
-+ (void)enableBackgroundTask:(BOOL)enable {
-    if (enable) {
-        if (!sJobManager) {
-            sJobManager = [[MHJobManager alloc] init];
-        }
-    } else {
-        if (sJobManager) {
-            sJobManager = nil;
-        }
-    }
 }
 
 - (id)init {
@@ -145,7 +139,7 @@ static MHJobManager *sJobManager;
     BOOL isBackgroundTask = self.isBackgroundTask;
     if (isBackgroundTask) {
         NSAssert(!self.inMainThread, @"BackgroundTask must run in worker thread!");
-        [sJobManager addBackgroundJob:self];
+        [[MHJobManager sharedInstance] addBackgroundJob:self];
     }
     
     void (^block)(void) = ^{
@@ -165,7 +159,7 @@ static MHJobManager *sJobManager;
         
         if (isBackgroundTask) {
             //End the task so the system knows that you are done with what you need to perform
-            [sJobManager removeBackgroundJob:self];
+            [[MHJobManager sharedInstance] removeBackgroundJob:self];
         }
     };
     
@@ -200,7 +194,7 @@ static MHJobManager *sJobManager;
 }
 
 + (void)runInMainThread:(void (^)(void))block {
-    if (sJobManager.inBackground) {
+    if ([MHJobManager sharedInstance].inBackground) {
         NSLog(@"job will run in main thread when application is background , intended code?");
     }
     dispatch_async(dispatch_get_main_queue(),block);

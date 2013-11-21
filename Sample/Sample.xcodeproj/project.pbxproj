@@ -220,6 +220,13 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Tsuyoshi Miyano";
 				TargetAttributes = {
+					48D282AC183C3AF0004574F9 = {
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 0;
+							};
+						};
+					};
 					48D282C7183C3AF0004574F9 = {
 						TestTargetID = 48D282AC183C3AF0004574F9;
 					};

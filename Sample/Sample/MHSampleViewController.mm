@@ -108,11 +108,11 @@
     [self.view addSubview:label2];
     [self.view addSubview:label3];
     
-    [MHJob enableBackgroundTask:YES];
     MHJob *job = [[MHJob alloc] init];
     job.isBackgroundTask = YES;
     job.expirationBlock = ^(MHJob *job){
-        //[job cancel];
+        //[job cancel];//jobを中止する
+
     };
     job.completionBlock = ^(BOOL success) {
         NSLog(@"completion(%d)!", success);
@@ -120,6 +120,7 @@
     [job run:^(MHJob *job){
         int count = 0;
         while (1) {
+            //NSLog(@"remain:%4.1f", [[UIApplication sharedApplication] backgroundTimeRemaining]);
             [[UIApplication sharedApplication] setApplicationIconBadgeNumber:count];
             if (job.state == MHJobState_Canceling) {
                 return;

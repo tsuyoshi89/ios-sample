@@ -22,6 +22,7 @@
 		48D282E2183C3C1F004574F9 /* MHTileImage.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48D282E1183C3C1F004574F9 /* MHTileImage.mm */; };
 		48D282E5183C429F004574F9 /* MHSampleViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48D282E4183C429F004574F9 /* MHSampleViewController.mm */; };
 		48D282E8183C43A7004574F9 /* hukidashi@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 48D282E7183C43A7004574F9 /* hukidashi@2x.png */; };
+		48D282EE183DBD02004574F9 /* MHJob.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48D282ED183DBD02004574F9 /* MHJob.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,8 @@
 		48D282E3183C429F004574F9 /* MHSampleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHSampleViewController.h; sourceTree = "<group>"; };
 		48D282E4183C429F004574F9 /* MHSampleViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHSampleViewController.mm; sourceTree = "<group>"; };
 		48D282E7183C43A7004574F9 /* hukidashi@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "hukidashi@2x.png"; path = "Resources/hukidashi@2x.png"; sourceTree = "<group>"; };
+		48D282EC183DBD02004574F9 /* MHJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHJob.h; sourceTree = "<group>"; };
+		48D282ED183DBD02004574F9 /* MHJob.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHJob.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +126,8 @@
 				48D282B7183C3AF0004574F9 /* Supporting Files */,
 				48D282DF183C3BD2004574F9 /* MHCommon.h */,
 				48D282E0183C3C1F004574F9 /* MHTileImage.h */,
+				48D282EC183DBD02004574F9 /* MHJob.h */,
+				48D282ED183DBD02004574F9 /* MHJob.mm */,
 				48D282E1183C3C1F004574F9 /* MHTileImage.mm */,
 				48D282E3183C429F004574F9 /* MHSampleViewController.h */,
 				48D282E4183C429F004574F9 /* MHSampleViewController.mm */,
@@ -268,6 +273,7 @@
 				48D282E5183C429F004574F9 /* MHSampleViewController.mm in Sources */,
 				48D282BD183C3AF0004574F9 /* main.m in Sources */,
 				48D282C1183C3AF0004574F9 /* MHAppDelegate.mm in Sources */,
+				48D282EE183DBD02004574F9 /* MHJob.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -470,6 +476,7 @@
 				48D282DB183C3AF0004574F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		48D282DC183C3AF0004574F9 /* Build configuration list for PBXNativeTarget "SampleTests" */ = {
 			isa = XCConfigurationList;
@@ -478,6 +485,7 @@
 				48D282DE183C3AF0004574F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

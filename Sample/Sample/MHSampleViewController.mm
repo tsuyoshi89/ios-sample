@@ -9,6 +9,8 @@
 #import "MHSampleViewController.h"
 #import "MHTileImage.h"
 
+#import "MHJob.h"
+
 @interface MHSampleViewController ()
 
 @end
@@ -105,6 +107,27 @@
     [self.view addSubview:label1];
     [self.view addSubview:label2];
     [self.view addSubview:label3];
+    
+    [MHJob enableBackgroundTask:YES];
+    MHJob *job = [[MHJob alloc] init];
+    job.isBackgroundTask = YES;
+    job.expirationBlock = ^(MHJob *job){
+        //[job cancel];
+    };
+    job.completionBlock = ^(BOOL success) {
+        NSLog(@"completion(%d)!", success);
+    };
+    [job run:^(MHJob *job){
+        int count = 0;
+        while (1) {
+            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:count];
+            if (job.state == MHJobState_Canceling) {
+                return;
+            }
+            [job wait:1];
+            count += 1;
+        }
+    }];
 }
 
 - (void)didReceiveMemoryWarning

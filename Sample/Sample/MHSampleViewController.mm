@@ -7,16 +7,20 @@
 //
 
 #import "MHSampleViewController.h"
+
 #import "MHTileImage.h"
-
 #import "MHJob.h"
+#import "MHCloudHelper.h"
+#import "MHFileHelper.h"
 
-@interface MHSampleViewController ()
+@interface MHSampleViewController () <MHCloudStateObserver>
 
 @end
 
 
-@implementation MHSampleViewController
+@implementation MHSampleViewController {
+    NSURL *_containerURL;
+}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -118,9 +122,9 @@
         NSLog(@"completion(%d)!", success);
     };
     [job run:^(MHJob *job){
-        int count = 0;
         while (1) {
             //NSLog(@"remain:%4.1f", [[UIApplication sharedApplication] backgroundTimeRemaining]);
+            int count = [[UIApplication sharedApplication] applicationIconBadgeNumber] + 1;
             [[UIApplication sharedApplication] setApplicationIconBadgeNumber:count];
             if (job.state == MHJobState_Canceling) {
                 return;
@@ -129,12 +133,58 @@
             count += 1;
         }
     }];
+    
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    button.frame = CGRectMake(160, 50, 150, 50);
+    [button setTitle:@"save badge number" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(saveNumber) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+    
+    [[MHCloudHelper sharedInstance] addStateObserver:self];
+}
+
+- (void)saveNumber {
+    if (!_containerURL) {
+        NSLog(@"please, login icloud");
+        return;
+    }
+
+    int num = [[UIApplication sharedApplication] applicationIconBadgeNumber];
+    NSData *data = [NSData dataWithBytes:&num length:sizeof(num)];
+
+    if ([MHCloudHelper fileExistsAtURL:_containerURL]) {
+        [MHCloudHelper writeDataAtURL:_containerURL data:data append:NO completion:^(BOOL success) {
+            NSLog(@"update cloud file:%d", success);
+        }];
+    } else {
+        [MHCloudHelper createItemAtURL:_containerURL data:data completion:^(BOOL success) {
+            NSLog(@"create cloud file:%d", success);
+        }];
+    }
+   
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)cloudAvailabilityChanged:(BOOL)available tokenChanged:(BOOL)tokenChanged {
+    if (!available) {
+        _containerURL = nil;
+        return;
+    }
+    _containerURL = [[MHCloudHelper sharedInstance] documentsURLByAppendingPathComponent:@"badge.txt"];
+    
+    if ([MHCloudHelper fileExistsAtURL:_containerURL]) {
+        NSData *data = [NSData dataWithContentsOfURL:_containerURL];
+        NSAssert(data.length == sizeof(int), @"invalid data!!");
+        int num;
+        memcpy(&num, data.bytes, sizeof(int));
+        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:num];
+        NSLog(@"load badge number:%d", num);
+    }
 }
 
 @end

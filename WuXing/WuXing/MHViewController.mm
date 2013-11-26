@@ -119,13 +119,10 @@ GLfloat gCubeVertexData[216] =
     if (!context) {
         NSLog(@"Failed to create ES context");
     }
-    if (!self.context) {
-        NSLog(@"Failed to create ES context");
-    }
     
     self.context = context;
     
-#if 1
+#ifdef USE_OLD_CODE
     _animating = FALSE;
     _displayLinkSupported = FALSE;
     _animationFrameInterval = 1;
@@ -161,6 +158,7 @@ GLfloat gCubeVertexData[216] =
     }
 }
 
+#ifdef USE_OLD_CODE
 - (NSInteger)animationFrameInterval {
 	return _animationFrameInterval;
 }
@@ -227,7 +225,7 @@ GLfloat gCubeVertexData[216] =
 
 	[(EAGLView *)self.view presentFramebuffer];
 }
-
+#endif /* USE_OLD_CODE */
 
 - (void)didReceiveMemoryWarning
 {
@@ -251,18 +249,14 @@ GLfloat gCubeVertexData[216] =
 {
     [EAGLContext setCurrentContext:self.context];
     
-    if ([self.context API] == kEAGLRenderingAPIOpenGLES2) {
-        [self loadShaders];
-    }
-
     glContext = self.context;
     glProgram = _program;
-
 #if 1
     // OpenGL ESの初期化（2.0, 1.1に共通の初期化）
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     if (glContext.API == kEAGLRenderingAPIOpenGLES2) {
+        [self loadShaders];
         // OpenGL ES 2.0の初期化
     } else {
         // OpenGL ES 1.1の初期化
@@ -270,11 +264,11 @@ GLfloat gCubeVertexData[216] =
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     }
-    
-    
     _texture = MHTexture::createWithFile("texture1.png");
 #else
-
+    
+    [self loadShaders];
+    
     self.effect = [[GLKBaseEffect alloc] init];
     self.effect.light0.enabled = GL_TRUE;
     self.effect.light0.diffuseColor = GLKVector4Make(1.0f, 0.4f, 0.4f, 1.0f);
@@ -319,6 +313,7 @@ GLfloat gCubeVertexData[216] =
     }
 }
 
+#ifdef USE_OLD_CODE
 - (void)viewWillAppear:(BOOL)animated {
 	[self startAnimation];
 	[super viewWillAppear:animated];
@@ -328,6 +323,7 @@ GLfloat gCubeVertexData[216] =
 	[self stopAnimation];
 	[super viewWillDisappear:animated];
 }
+#endif
 
 #pragma mark - GLKView and GLKViewController delegate methods
 
@@ -365,6 +361,15 @@ GLfloat gCubeVertexData[216] =
 {
     glClearColor(0.65f, 0.65f, 0.65f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#if 1
+    
+    CGRect bounds = self.view.bounds;
+    CGFloat aspect = bounds.size.width /  bounds.size.height;
+    
+    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
+                           0.5, 1.0f, 1.0f, 1.0f);
+
+#else
     
     glBindVertexArrayOES(_vertexArray);
     
@@ -380,6 +385,7 @@ GLfloat gCubeVertexData[216] =
     glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
+#endif
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation

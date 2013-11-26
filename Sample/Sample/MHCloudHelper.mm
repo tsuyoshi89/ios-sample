@@ -307,25 +307,76 @@ static void logging(MHCloudDocument *document, NSString *prefix) {
     NSArray* queryResults = [query results];
     for (NSMetadataItem* result in queryResults) {
         NSString* fileName = [result valueForAttribute:NSMetadataItemFSNameKey];
+        NSString *displayName = [result valueForAttribute:NSMetadataItemDisplayNameKey];
         NSURL *url = [result valueForAttribute:NSMetadataItemURLKey];
-        NSLog(@"file:%@, url:%@", fileName, url.absoluteString);
-        
+        NSString *pathKey = [result valueForAttribute:NSMetadataItemPathKey];// NSString
+        unsigned long fsSize = [[result valueForAttribute:NSMetadataItemFSSizeKey] unsignedLongValue];// file size in bytes; unsigned long
         NSDate *createDate = [result valueForAttribute:NSMetadataItemFSCreationDateKey];
         NSDate *updateDate = [result valueForAttribute:NSMetadataItemFSContentChangeDateKey];
+        BOOL isUbiquitos = [[result valueForAttribute:NSMetadataItemIsUbiquitousKey] boolValue]; // boolean NSNumber
+        NSString *status = [result valueForAttribute:NSMetadataUbiquitousItemDownloadingStatusKey];// NSString ; download status of this item. The values are the three strings defined below:
+        BOOL isDownloading = [[result valueForAttribute:NSMetadataUbiquitousItemIsDownloadingKey] boolValue];// boolean NSNumber
+        BOOL isUploaded = [[result valueForAttribute:NSMetadataUbiquitousItemIsUploadedKey] boolValue];// boolean NSNumber
+        BOOL isUploading = [[result valueForAttribute:NSMetadataUbiquitousItemIsUploadingKey] boolValue];// boolean NSNumber
+        double downloadPer = [[result valueForAttribute:NSMetadataUbiquitousItemPercentDownloadedKey] doubleValue];// double NSNumber; range [0..100]
+        double uploadPer = [[result valueForAttribute:NSMetadataUbiquitousItemPercentUploadedKey] doubleValue];// double NSNumber; range [0..100]
+        NSError *downloadErr = [result valueForAttribute:NSMetadataUbiquitousItemDownloadingErrorKey]; // NSError; the error when downloading the item from iCloud failed, see the NSUbiquitousFile section in FoundationErrors.h
+        NSError *uploadErr = [result valueForAttribute:NSMetadataUbiquitousItemUploadingErrorKey];// NSError; the error when uploading the item to iCloud failed, see the NSUbiquitousFile section in FoundationErrors.h
+
         NSDateFormatter *fmt = dateFormatter();
-        [fmt setDateFormat:@"MM/dd HH:mm"];
-        NSLog(@"create:%@, update:%@", [fmt stringFromDate:createDate], [fmt stringFromDate:updateDate]);
+        [fmt setDateFormat:@"YYYY/MM/dd HH:mm"];
+
+        NSString *infoText = [NSString stringWithFormat:@"NSMetadataItem\n\t"
+                              "NSMetadataItemFSNameKey:%@\n\t"
+                              "NSMetadataItemDisplayNameKey:%@\n\t"
+                              "NSMetadataItemURLKey:%@\n\t"
+                              "NSMetadataItemPathKey:%@\n\t"
+                              "NSMetadataItemFSSizeKey:%lu\n\t"
+                              "NSMetadataItemFSCreationDateKey:%@\n\t"
+                              "NSMetadataItemFSContentChangeDateKey:%@\n\t"
+                              "NSMetadataItemIsUbiquitousKey:%@\n\t"
+                              "NSMetadataUbiquitousItemDownloadingStatusKey:%@\n\t"
+                              "NSMetadataUbiquitousItemIsDownloadingKey:%@\n\t"
+                              "NSMetadataUbiquitousItemIsUploadedKey:%@\n\t"
+                              "NSMetadataUbiquitousItemIsUploadingKey:%@\n\t"
+                              "NSMetadataUbiquitousItemPercentDownloadedKey:%.f\n\t"
+                              "NSMetadataUbiquitousItemPercentUploadedKey:%.f\n\t"
+                              "NSMetadataUbiquitousItemDownloadingErrorKey:%@\n\t"
+                              "NSMetadataUbiquitousItemUploadingErrorKey:%@\n\t",
+                              fileName, displayName, [url absoluteString],
+                              pathKey, fsSize, [fmt stringFromDate:createDate], [fmt stringFromDate:updateDate],
+                              isUbiquitos ? @"YES" : @"NO", status, isDownloading ? @"YES" : @"NO",
+                              isUploaded ?@"YES" : @"NO", isUploading ? @"YES" : @"NO",
+                              downloadPer, uploadPer, downloadErr, uploadErr];
+                          
+        NSLog(@"%@", infoText);
+#if 0
+                          NSMetadataUbiquitousItemDownloadingStatusNotDownloaded;// this item has not been downloaded yet. Use startDownloadingUbiquitousItemAtURL:error: to download it.
+                          NSMetadataUbiquitousItemDownloadingStatusDownloaded;// there is a local version of this item available. The most current version will get downloaded as soon as possible.
+                          NSMetadataUbiquitousItemDownloadingStatusCurrent;// there is a local version of this item and it is the most up-to-date version known to this device.
+
+                          
         NSFileVersion *version = [NSFileVersion currentVersionOfItemAtURL:url];
         NSLog(@"modificationDate:%@", [fmt stringFromDate:version.modificationDate]);
-        
         NSLog(@"data:%@", [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:nil]);
-        
         [MHCloudDocument openURL:url onOpen:^(MHCloudDocument *document) {
             NSLog(@"name:%@ data:%@", [url lastPathComponent], [[NSString alloc] initWithData:document.data encoding:NSUTF8StringEncoding]);
         } completion:nil];
         
         NSArray *versions = [NSFileVersion otherVersionsOfItemAtURL:url];
         NSLog(@"versions count:%lu", (unsigned long)versions.count);
+#endif
+        
+        if ([status isEqualToString:NSMetadataUbiquitousItemDownloadingStatusNotDownloaded]) {
+            NSError *error;
+            [[NSFileManager defaultManager] startDownloadingUbiquitousItemAtURL:url error:&error];
+            
+            if (error == nil) {
+                NSLog(@"success download!!");
+            } else {
+                NSLog(@"error download:%@!", error);
+            }
+        }
     }
 }
 #endif

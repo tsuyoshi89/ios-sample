@@ -76,14 +76,6 @@ GLfloat gCubeVertexData[216] =
     -0.5f, 0.5f, -0.5f,        0.0f, 0.0f, -1.0f
 };
 
-// テクスチャ座標0
-const GLfloat texcoord0[] = {
-    0.0f, 1.0f,
-    1.0f, 1.0f,
-    0.0f, 0.0f,
-    1.0f, 0.0f
-};
-
 @interface MHViewController () {
     GLuint _program;
     
@@ -93,8 +85,6 @@ const GLfloat texcoord0[] = {
     
     GLuint _vertexArray;
     GLuint _vertexBuffer;
-    
-    GLuint _texture;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
@@ -114,35 +104,34 @@ const GLfloat texcoord0[] = {
     NSInteger _animationFrameInterval;
     BOOL _animating;
     NSTimer *_animationTimer;
+    GLuint _texture;
 }
 
-- (void)awakeFromNib {
+- (void)viewDidLoad {
 
-    //[super viewDidLoad];
+    [super viewDidLoad];
     
     EAGLContext *context;
-    
-#ifdef ENABLE_GL2
-   context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-#endif
-    
+    //context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     if (!context) {
         context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
     }
-
     if (!context) {
         NSLog(@"Failed to create ES context");
     }
-
+    if (!self.context) {
+        NSLog(@"Failed to create ES context");
+    }
+    
     self.context = context;
-
+    
 #if 1
     _animating = FALSE;
     _displayLinkSupported = FALSE;
     _animationFrameInterval = 1;
     _displayLink = nil;
     _animationTimer = nil;
-
+    
     EAGLView *view = (EAGLView *)self.view;
     [view setContext:context];
     [view setFramebuffer];
@@ -154,8 +143,6 @@ const GLfloat texcoord0[] = {
 	if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending) {
 		_displayLinkSupported = TRUE;
     }
-    
-
 #else
     GLKView *view = (GLKView *)self.view;
     view.context = self.context;
@@ -165,7 +152,8 @@ const GLfloat texcoord0[] = {
     [self setupGL];
 }
 
-- (void)dealloc {
+- (void)dealloc
+{    
     [self tearDownGL];
     
     if ([EAGLContext currentContext] == self.context) {
@@ -261,16 +249,16 @@ const GLfloat texcoord0[] = {
 
 - (void)setupGL
 {
-    if (![EAGLContext setCurrentContext:self.context]) {
-        NSLog(@"Failed to set current context!");
-    }
+    [EAGLContext setCurrentContext:self.context];
+    
     if ([self.context API] == kEAGLRenderingAPIOpenGLES2) {
         [self loadShaders];
     }
-    
+
     glContext = self.context;
     glProgram = _program;
-    
+
+#if 1
     // OpenGL ESの初期化（2.0, 1.1に共通の初期化）
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -280,13 +268,13 @@ const GLfloat texcoord0[] = {
         // OpenGL ES 1.1の初期化
         glEnable(GL_TEXTURE_2D);
         glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);			
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     }
-
+    
     
     _texture = MHTexture::createWithFile("texture1.png");
+#else
 
-#if 0
     self.effect = [[GLKBaseEffect alloc] init];
     self.effect.light0.enabled = GL_TRUE;
     self.effect.light0.diffuseColor = GLKVector4Make(1.0f, 0.4f, 0.4f, 1.0f);
@@ -307,22 +295,6 @@ const GLfloat texcoord0[] = {
     
     glBindVertexArrayOES(0);
 #endif
-
-#if 0 //@customize
-    glLoadIdentity();
-#if 0 /* keep same size after rotating */
-    CGSize size =   self.view.bounds.size;
-    float w = size.width;
-    float h = size.height;
-    glOrthof(-w / 320, w / 320, -h / 568, h /568, 0.5f, -0.5f);
-#else /* smooth zooming when rotating */
-    glOrthof(-1.0f, -1.0f, 2.0f, 2.0f, 0.5f, -0.5f);
-#endif
-    //glOrthof(0, 0, 320, 480, 0.5, -0.5f);
-    glViewport(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
-#endif
-
-
 }
 
 - (void)tearDownGL
@@ -389,18 +361,11 @@ const GLfloat texcoord0[] = {
 #endif
 }
 
-- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-
+- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
+{
     glClearColor(0.65f, 0.65f, 0.65f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-
-    int ratio = 1;
-    MHTexture::drawTexture(_texture, -0.5 * ratio, -0.5 * ratio, 1.0 * ratio, 1.0 * ratio,
-                           0.5, 1.0f, 1.0f, 0.5f);
-    
-#if 0
-
     glBindVertexArrayOES(_vertexArray);
     
     // Render the object with GLKit
@@ -415,7 +380,6 @@ const GLfloat texcoord0[] = {
     glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
-#endif
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation

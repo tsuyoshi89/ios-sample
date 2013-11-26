@@ -19,13 +19,19 @@
 		484C43BB183ED8870045B399 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 484C43B9183ED8870045B399 /* Main_iPad.storyboard */; };
 		484C43BD183ED8870045B399 /* Shader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 484C43BC183ED8870045B399 /* Shader.fsh */; };
 		484C43BF183ED8870045B399 /* Shader.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 484C43BE183ED8870045B399 /* Shader.vsh */; };
-		484C43C2183ED8870045B399 /* MHViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 484C43C1183ED8870045B399 /* MHViewController.m */; };
+		484C43C2183ED8870045B399 /* MHViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 484C43C1183ED8870045B399 /* MHViewController.mm */; };
 		484C43C4183ED8870045B399 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 484C43C3183ED8870045B399 /* Images.xcassets */; };
 		484C43CB183ED8870045B399 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484C43CA183ED8870045B399 /* XCTest.framework */; };
 		484C43CC183ED8870045B399 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484C43A0183ED8870045B399 /* Foundation.framework */; };
 		484C43CD183ED8870045B399 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 484C43A4183ED8870045B399 /* UIKit.framework */; };
 		484C43D5183ED8880045B399 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 484C43D3183ED8880045B399 /* InfoPlist.strings */; };
 		484C43D7183ED8880045B399 /* WuXingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 484C43D6183ED8880045B399 /* WuXingTests.m */; };
+		484C43E2183EDC2B0045B399 /* MHTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 484C43E0183EDC2B0045B399 /* MHTexture.cpp */; };
+		484C43E5183EDCD80045B399 /* MHTexture+iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 484C43E4183EDCD80045B399 /* MHTexture+iOS.mm */; };
+		484C43E8183EE77A0045B399 /* texture1.png in Resources */ = {isa = PBXBuildFile; fileRef = 484C43E7183EE77A0045B399 /* texture1.png */; };
+		485583E1184472BB0018F9CF /* common.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485583E0184472BB0018F9CF /* common.mm */; };
+		485583E418447D080018F9CF /* EAGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 485583E318447D080018F9CF /* EAGLView.m */; };
+		485583E61844904A0018F9CF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485583E51844904A0018F9CF /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,13 +62,22 @@
 		484C43BC183ED8870045B399 /* Shader.fsh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = Shader.fsh; path = Shaders/Shader.fsh; sourceTree = "<group>"; };
 		484C43BE183ED8870045B399 /* Shader.vsh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = Shader.vsh; path = Shaders/Shader.vsh; sourceTree = "<group>"; };
 		484C43C0183ED8870045B399 /* MHViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MHViewController.h; sourceTree = "<group>"; };
-		484C43C1183ED8870045B399 /* MHViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MHViewController.m; sourceTree = "<group>"; };
+		484C43C1183ED8870045B399 /* MHViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MHViewController.mm; sourceTree = "<group>"; };
 		484C43C3183ED8870045B399 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		484C43C9183ED8870045B399 /* WuXingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WuXingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		484C43CA183ED8870045B399 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		484C43D2183ED8880045B399 /* WuXingTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WuXingTests-Info.plist"; sourceTree = "<group>"; };
 		484C43D4183ED8880045B399 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		484C43D6183ED8880045B399 /* WuXingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WuXingTests.m; sourceTree = "<group>"; };
+		484C43E0183EDC2B0045B399 /* MHTexture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MHTexture.cpp; sourceTree = "<group>"; };
+		484C43E1183EDC2B0045B399 /* MHTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHTexture.h; sourceTree = "<group>"; };
+		484C43E4183EDCD80045B399 /* MHTexture+iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = "MHTexture+iOS.mm"; sourceTree = "<group>"; };
+		484C43E7183EE77A0045B399 /* texture1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = texture1.png; path = Resources/texture1.png; sourceTree = "<group>"; };
+		485583DF18446EDB0018F9CF /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		485583E0184472BB0018F9CF /* common.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = common.mm; sourceTree = "<group>"; };
+		485583E218447D080018F9CF /* EAGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGLView.h; sourceTree = "<group>"; };
+		485583E318447D080018F9CF /* EAGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EAGLView.m; sourceTree = "<group>"; };
+		485583E51844904A0018F9CF /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +85,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				485583E61844904A0018F9CF /* QuartzCore.framework in Frameworks */,
 				484C43A9183ED8870045B399 /* OpenGLES.framework in Frameworks */,
 				484C43A3183ED8870045B399 /* CoreGraphics.framework in Frameworks */,
 				484C43A5183ED8870045B399 /* UIKit.framework in Frameworks */,
@@ -94,6 +110,7 @@
 		484C4394183ED8870045B399 = {
 			isa = PBXGroup;
 			children = (
+				484C43E6183EE6E80045B399 /* Resources */,
 				484C43AA183ED8870045B399 /* WuXing */,
 				484C43D0183ED8880045B399 /* WuXingTests */,
 				484C439F183ED8870045B399 /* Frameworks */,
@@ -113,6 +130,7 @@
 		484C439F183ED8870045B399 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				485583E51844904A0018F9CF /* QuartzCore.framework */,
 				484C43A0183ED8870045B399 /* Foundation.framework */,
 				484C43A2183ED8870045B399 /* CoreGraphics.framework */,
 				484C43A4183ED8870045B399 /* UIKit.framework */,
@@ -133,9 +151,16 @@
 				484C43BC183ED8870045B399 /* Shader.fsh */,
 				484C43BE183ED8870045B399 /* Shader.vsh */,
 				484C43C0183ED8870045B399 /* MHViewController.h */,
-				484C43C1183ED8870045B399 /* MHViewController.m */,
+				484C43C1183ED8870045B399 /* MHViewController.mm */,
 				484C43C3183ED8870045B399 /* Images.xcassets */,
 				484C43AB183ED8870045B399 /* Supporting Files */,
+				484C43E0183EDC2B0045B399 /* MHTexture.cpp */,
+				484C43E1183EDC2B0045B399 /* MHTexture.h */,
+				484C43E4183EDCD80045B399 /* MHTexture+iOS.mm */,
+				485583DF18446EDB0018F9CF /* common.h */,
+				485583E0184472BB0018F9CF /* common.mm */,
+				485583E218447D080018F9CF /* EAGLView.h */,
+				485583E318447D080018F9CF /* EAGLView.m */,
 			);
 			path = WuXing;
 			sourceTree = "<group>";
@@ -167,6 +192,14 @@
 				484C43D3183ED8880045B399 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		484C43E6183EE6E80045B399 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				484C43E7183EE77A0045B399 /* texture1.png */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -246,6 +279,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				484C43E8183EE77A0045B399 /* texture1.png in Resources */,
 				484C43BD183ED8870045B399 /* Shader.fsh in Resources */,
 				484C43BB183ED8870045B399 /* Main_iPad.storyboard in Resources */,
 				484C43B8183ED8870045B399 /* Main_iPhone.storyboard in Resources */,
@@ -270,8 +304,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				484C43E2183EDC2B0045B399 /* MHTexture.cpp in Sources */,
+				484C43E5183EDCD80045B399 /* MHTexture+iOS.mm in Sources */,
 				484C43B1183ED8870045B399 /* main.m in Sources */,
-				484C43C2183ED8870045B399 /* MHViewController.m in Sources */,
+				485583E418447D080018F9CF /* EAGLView.m in Sources */,
+				484C43C2183ED8870045B399 /* MHViewController.mm in Sources */,
+				485583E1184472BB0018F9CF /* common.mm in Sources */,
 				484C43B5183ED8870045B399 /* MHAppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -491,6 +529,7 @@
 				484C43DC183ED8880045B399 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		484C43DD183ED8880045B399 /* Build configuration list for PBXNativeTarget "WuXingTests" */ = {
 			isa = XCConfigurationList;
@@ -499,6 +538,7 @@
 				484C43DF183ED8880045B399 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

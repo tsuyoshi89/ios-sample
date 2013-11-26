@@ -7,6 +7,8 @@
 //
 
 #import "MHViewController.h"
+#import "MHTexture.h"
+#import "EAGLView.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -74,6 +76,14 @@ GLfloat gCubeVertexData[216] =
     -0.5f, 0.5f, -0.5f,        0.0f, 0.0f, -1.0f
 };
 
+// テクスチャ座標0
+const GLfloat texcoord0[] = {
+    0.0f, 1.0f,
+    1.0f, 1.0f,
+    0.0f, 0.0f,
+    1.0f, 0.0f
+};
+
 @interface MHViewController () {
     GLuint _program;
     
@@ -83,6 +93,8 @@ GLfloat gCubeVertexData[216] =
     
     GLuint _vertexArray;
     GLuint _vertexBuffer;
+    
+    GLuint _texture;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
@@ -96,33 +108,138 @@ GLfloat gCubeVertexData[216] =
 - (BOOL)validateProgram:(GLuint)prog;
 @end
 
-@implementation MHViewController
+@implementation MHViewController {
+    id _displayLink;
+    BOOL _displayLinkSupported;
+    NSInteger _animationFrameInterval;
+    BOOL _animating;
+    NSTimer *_animationTimer;
+}
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
+- (void)awakeFromNib {
+
+    //[super viewDidLoad];
     
-    self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    EAGLContext *context;
+    
+#ifdef ENABLE_GL2
+   context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+#endif
+    
+    if (!context) {
+        context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+    }
 
-    if (!self.context) {
+    if (!context) {
         NSLog(@"Failed to create ES context");
     }
+
+    self.context = context;
+
+#if 1
+    _animating = FALSE;
+    _displayLinkSupported = FALSE;
+    _animationFrameInterval = 1;
+    _displayLink = nil;
+    _animationTimer = nil;
+
+    EAGLView *view = (EAGLView *)self.view;
+    [view setContext:context];
+    [view setFramebuffer];
     
+    // Use of CADisplayLink requires iOS version 3.1 or greater.
+	// The NSTimer object is used as fallback when it isn't available.
+	NSString *reqSysVer = @"3.1";
+	NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+	if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending) {
+		_displayLinkSupported = TRUE;
+    }
+    
+
+#else
     GLKView *view = (GLKView *)self.view;
     view.context = self.context;
     view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
+#endif
     
     [self setupGL];
 }
 
-- (void)dealloc
-{    
+- (void)dealloc {
     [self tearDownGL];
     
     if ([EAGLContext currentContext] == self.context) {
         [EAGLContext setCurrentContext:nil];
     }
 }
+
+- (NSInteger)animationFrameInterval {
+	return _animationFrameInterval;
+}
+
+- (void)setAnimationFrameInterval:(NSInteger)frameInterval {
+	/*
+	 Frame interval defines how many display frames must pass between each time the display link fires.
+	 The display link will only fire 30 times a second when the frame internal is two on a display that refreshes 60 times a second. The default frame interval setting of one will fire 60 times a second when the display refreshes at 60 times a second. A frame interval setting of less than one results in undefined behavior.
+	 */
+	if (frameInterval >= 1)
+	{
+		_animationFrameInterval = frameInterval;
+		
+		if (_animating) {
+			[self stopAnimation];
+			[self startAnimation];
+		}
+	}
+}
+
+- (void)startAnimation {
+	if (!_animating) {
+		if (_displayLinkSupported) {
+			/*
+			 CADisplayLink is API new in iOS 3.1. Compiling against earlier versions will result in a warning, but can be dismissed if the system version runtime check for CADisplayLink exists in -awakeFromNib. The runtime check ensures this code will not be called in system versions earlier than 3.1.
+             */
+			_displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(drawFrame)];
+			[_displayLink setFrameInterval:_animationFrameInterval];
+			
+			// The run loop will retain the display link on add.
+			[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+		} else {
+			_animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * _animationFrameInterval) target:self selector:@selector(drawFrame) userInfo:nil repeats:TRUE];
+        }
+		_animating = TRUE;
+	}
+}
+
+- (void)stopAnimation {
+	if (_animating) {
+		if (_displayLinkSupported) {
+			[_displayLink invalidate];
+			_displayLink = nil;
+		} else {
+			[_animationTimer invalidate];
+			_animationTimer = nil;
+		}
+		_animating = FALSE;
+	}
+}
+
+- (void)drawFrame {
+
+	[(EAGLView *)self.view setFramebuffer];
+
+    glClearColor(0.7, 0.7, 0.7, 1);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    CGRect bounds = self.view.bounds;
+    CGFloat aspect = bounds.size.width /  bounds.size.height;
+    
+    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
+                           0.5, 1.0f, 1.0f, 1.0f);
+
+	[(EAGLView *)self.view presentFramebuffer];
+}
+
 
 - (void)didReceiveMemoryWarning
 {
@@ -144,10 +261,32 @@ GLfloat gCubeVertexData[216] =
 
 - (void)setupGL
 {
-    [EAGLContext setCurrentContext:self.context];
+    if (![EAGLContext setCurrentContext:self.context]) {
+        NSLog(@"Failed to set current context!");
+    }
+    if ([self.context API] == kEAGLRenderingAPIOpenGLES2) {
+        [self loadShaders];
+    }
     
-    [self loadShaders];
+    glContext = self.context;
+    glProgram = _program;
     
+    // OpenGL ESの初期化（2.0, 1.1に共通の初期化）
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (glContext.API == kEAGLRenderingAPIOpenGLES2) {
+        // OpenGL ES 2.0の初期化
+    } else {
+        // OpenGL ES 1.1の初期化
+        glEnable(GL_TEXTURE_2D);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);			
+    }
+
+    
+    _texture = MHTexture::createWithFile("texture1.png");
+
+#if 0
     self.effect = [[GLKBaseEffect alloc] init];
     self.effect.light0.enabled = GL_TRUE;
     self.effect.light0.diffuseColor = GLKVector4Make(1.0f, 0.4f, 0.4f, 1.0f);
@@ -167,14 +306,38 @@ GLfloat gCubeVertexData[216] =
     glVertexAttribPointer(GLKVertexAttribNormal, 3, GL_FLOAT, GL_FALSE, 24, BUFFER_OFFSET(12));
     
     glBindVertexArrayOES(0);
+#endif
+
+#if 0 //@customize
+    glLoadIdentity();
+#if 0 /* keep same size after rotating */
+    CGSize size =   self.view.bounds.size;
+    float w = size.width;
+    float h = size.height;
+    glOrthof(-w / 320, w / 320, -h / 568, h /568, 0.5f, -0.5f);
+#else /* smooth zooming when rotating */
+    glOrthof(-1.0f, -1.0f, 2.0f, 2.0f, 0.5f, -0.5f);
+#endif
+    //glOrthof(0, 0, 320, 480, 0.5, -0.5f);
+    glViewport(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
+#endif
+
+
 }
 
 - (void)tearDownGL
 {
     [EAGLContext setCurrentContext:self.context];
     
+    if (_texture) {
+        glDeleteTextures(1, &_texture);
+        _texture = 0;
+    }
+
+#if 0
     glDeleteBuffers(1, &_vertexBuffer);
     glDeleteVertexArraysOES(1, &_vertexArray);
+#endif
     
     self.effect = nil;
     
@@ -184,10 +347,20 @@ GLfloat gCubeVertexData[216] =
     }
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+	[self startAnimation];
+	[super viewWillAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+	[self stopAnimation];
+	[super viewWillDisappear:animated];
+}
+
 #pragma mark - GLKView and GLKViewController delegate methods
 
-- (void)update
-{
+- (void)update {
+#if 0
     float aspect = fabsf(self.view.bounds.size.width / self.view.bounds.size.height);
     GLKMatrix4 projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(65.0f), aspect, 0.1f, 100.0f);
     
@@ -213,13 +386,21 @@ GLfloat gCubeVertexData[216] =
     _modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelViewMatrix);
     
     _rotation += self.timeSinceLastUpdate * 0.5f;
+#endif
 }
 
-- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
-{
+- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+
     glClearColor(0.65f, 0.65f, 0.65f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+
+    int ratio = 1;
+    MHTexture::drawTexture(_texture, -0.5 * ratio, -0.5 * ratio, 1.0 * ratio, 1.0 * ratio,
+                           0.5, 1.0f, 1.0f, 0.5f);
+    
+#if 0
+
     glBindVertexArrayOES(_vertexArray);
     
     // Render the object with GLKit
@@ -234,6 +415,7 @@ GLfloat gCubeVertexData[216] =
     glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
+#endif
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation

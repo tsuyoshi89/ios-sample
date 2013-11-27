@@ -14,4 +14,7 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
     #import <KiiSDK/Kii.h>
+    #import "KiiToolkit.h"
 #endif
+
+#import "common.h"

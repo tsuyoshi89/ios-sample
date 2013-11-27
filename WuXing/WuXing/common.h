@@ -9,8 +9,6 @@
 #ifndef WuXing_common_h
 #define WuXing_common_h
 
-//#define ENABLE_GL2
-
 #ifdef __cplusplus
 extern "C" {
 #endif

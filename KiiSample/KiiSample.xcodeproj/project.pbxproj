@@ -19,6 +19,10 @@
 		4855845E1845E7600018F9CF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485584461845E7600018F9CF /* UIKit.framework */; };
 		485584661845E7600018F9CF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 485584641845E7600018F9CF /* InfoPlist.strings */; };
 		485584681845E7600018F9CF /* KiiSampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 485584671845E7600018F9CF /* KiiSampleTests.m */; };
+		485584721845E9060018F9CF /* KiiSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485584711845E9060018F9CF /* KiiSDK.framework */; };
+		485584741845E9160018F9CF /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485584731845E9160018F9CF /* MobileCoreServices.framework */; };
+		4855847A1845E9870018F9CF /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485584791845E9870018F9CF /* Accounts.framework */; };
+		4855847B1845E9990018F9CF /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485584771845E9720018F9CF /* Twitter.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +52,12 @@
 		485584631845E7600018F9CF /* KiiSampleTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "KiiSampleTests-Info.plist"; sourceTree = "<group>"; };
 		485584651845E7600018F9CF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		485584671845E7600018F9CF /* KiiSampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KiiSampleTests.m; sourceTree = "<group>"; };
+		485584711845E9060018F9CF /* KiiSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = KiiSDK.framework; sourceTree = "<group>"; };
+		485584731845E9160018F9CF /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		485584751845E91E0018F9CF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		485584771845E9720018F9CF /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
+		485584791845E9870018F9CF /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
+		4855847C1845EA5B0018F9CF /* private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = private.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,9 +65,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4855847B1845E9990018F9CF /* Twitter.framework in Frameworks */,
+				4855847A1845E9870018F9CF /* Accounts.framework in Frameworks */,
+				485584741845E9160018F9CF /* MobileCoreServices.framework in Frameworks */,
 				485584451845E7600018F9CF /* CoreGraphics.framework in Frameworks */,
 				485584471845E7600018F9CF /* UIKit.framework in Frameworks */,
 				485584431845E7600018F9CF /* Foundation.framework in Frameworks */,
+				485584721845E9060018F9CF /* KiiSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,6 +110,11 @@
 		485584411845E7600018F9CF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				485584791845E9870018F9CF /* Accounts.framework */,
+				485584771845E9720018F9CF /* Twitter.framework */,
+				485584751845E91E0018F9CF /* SystemConfiguration.framework */,
+				485584731845E9160018F9CF /* MobileCoreServices.framework */,
+				485584711845E9060018F9CF /* KiiSDK.framework */,
 				485584421845E7600018F9CF /* Foundation.framework */,
 				485584441845E7600018F9CF /* CoreGraphics.framework */,
 				485584461845E7600018F9CF /* UIKit.framework */,
@@ -111,6 +130,7 @@
 				485584521845E7600018F9CF /* MHAppDelegate.m */,
 				485584541845E7600018F9CF /* Images.xcassets */,
 				485584491845E7600018F9CF /* Supporting Files */,
+				4855847C1845EA5B0018F9CF /* private.h */,
 			);
 			path = KiiSample;
 			sourceTree = "<group>";
@@ -362,9 +382,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/tsuyoshi/work/ios-sample2/KiiSample",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "KiiSample/KiiSample-Prefix.pch";
 				INFOPLIST_FILE = "KiiSample/KiiSample-Info.plist";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -375,9 +400,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/tsuyoshi/work/ios-sample2/KiiSample",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "KiiSample/KiiSample-Prefix.pch";
 				INFOPLIST_FILE = "KiiSample/KiiSample-Info.plist";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

@@ -6,12 +6,19 @@
 //  Copyright (c) 2013年 Tsuyoshi Miyano. All rights reserved.
 //
 
+#import "private.h"
 #import "MHAppDelegate.h"
 
 @implementation MHAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    
+    // Initialize the Kii SDK!
+    [Kii beginWithID:YOUR_KII_APP_ID
+              andKey:YOUR_KII_APP_KEY
+             andSite:kiiSiteJP];
+        
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];

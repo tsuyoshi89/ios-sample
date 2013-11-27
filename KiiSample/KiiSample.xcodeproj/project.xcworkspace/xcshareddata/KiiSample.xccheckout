@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>027DEE13-001C-4EF9-BF63-DF849AF2F7D0</string>
+	<key>IDESourceControlProjectName</key>
+	<string>KiiSample</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>6DE94147-0BE6-458C-ABED-119F90DA8E93</key>
+		<string>https://github.com/tsuyoshi89/ios-sample/trunk</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>KiiSample/KiiSample.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>6DE94147-0BE6-458C-ABED-119F90DA8E93</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>6DE94147-0BE6-458C-ABED-119F90DA8E93</key>
+		<string>https://github.com/tsuyoshi89/ios-sample</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/tsuyoshi89/ios-sample/trunk/KiiSample/KiiSample.xcodeproj</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>6DE94147-0BE6-458C-ABED-119F90DA8E93</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryBranchesRelativeLocationKey</key>
+			<string>branches</string>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlRepositoryTrunkRelativeLocationKey</key>
+			<string>trunk</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>6DE94147-0BE6-458C-ABED-119F90DA8E93</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ios-sample</string>
+		</dict>
+	</array>
+</dict>
+</plist>

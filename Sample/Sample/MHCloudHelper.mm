@@ -602,13 +602,12 @@ static void logging(MHCloudDocument *document, NSString *prefix) {
 }
 
 - (void)changeData:(NSData *)newData {
-    // if version conflict
+#if 0 // if version conflict
+    
     if (self.documentState & UIDocumentStateInConflict) {
         NSError *error;
-        BOOL ok = [NSFileVersion removeOtherVersionsOfItemAtURL:self.fileURL error:&error];
-        if (!ok) {
-            NSAssert(ok, @"removeOtherVersionsOfItemAtURL:%@, %@", [self.fileURL lastPathComponent], error.description);
-        }
+        [NSFileVersion removeOtherVersionsOfItemAtURL:self.fileURL error:&error];
+        NSLog(@"removeOtherVersionsOfItemAtURL:%@, %@", [self.fileURL lastPathComponent], error);
         for (NSFileVersion *version in [NSFileVersion unresolvedConflictVersionsOfItemAtURL:self.fileURL]) {
             version.resolved = YES;
 #ifdef DEBUG
@@ -619,7 +618,7 @@ static void logging(MHCloudDocument *document, NSString *prefix) {
 #endif
         }
     }
-    
+#endif
     // set change count to save automatically at closing
     self.data = newData;
     [self updateChangeCount:UIDocumentChangeDone];

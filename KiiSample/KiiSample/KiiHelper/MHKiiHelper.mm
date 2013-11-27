@@ -272,10 +272,12 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
                usingNetwork:(KiiSocialNetworkName)network
                   withError:(NSError *)error {
     BOOL ok = (error == nil);
-    NSLog(@"facebook handler error:%@", error);
+    if (!ok) {
+        NSLog(@"facebook handler error:%@", error);
+    }
     if (_facebookHandler != nil) {
         if (!ok) {//through not linked
-            if ([MHKiiHelper serverCodeIs:@"USER_NOT_LINKED" inError:error]) {
+            if (error.code == 319 || [MHKiiHelper serverCodeIs:@"USER_NOT_LINKED" inError:error]) {
                 ok = TRUE;
             }
             if ([MHKiiHelper serverCodeIs:@"FACEBOOK_USER_ALREADY_LINKED" inError:error]) {

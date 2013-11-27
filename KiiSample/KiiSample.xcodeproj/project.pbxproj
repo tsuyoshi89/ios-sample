@@ -92,6 +92,7 @@
 		4855853F184604520018F9CF /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 485584FE184604520018F9CF /* README.md */; };
 		48558542184604750018F9CF /* MHViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48558541184604750018F9CF /* MHViewController.mm */; };
 		48558544184611470018F9CF /* KiiSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48558543184611470018F9CF /* KiiSDK.framework */; };
+		485586DE18461BBA0018F9CF /* FacebookSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485586DD18461BBA0018F9CF /* FacebookSDK.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -224,6 +225,7 @@
 		48558540184604750018F9CF /* MHViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHViewController.h; sourceTree = "<group>"; };
 		48558541184604750018F9CF /* MHViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHViewController.mm; sourceTree = "<group>"; };
 		48558543184611470018F9CF /* KiiSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = KiiSDK.framework; sourceTree = "<group>"; };
+		485586DD18461BBA0018F9CF /* FacebookSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FacebookSDK.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -236,6 +238,7 @@
 				485584741845E9160018F9CF /* MobileCoreServices.framework in Frameworks */,
 				485584451845E7600018F9CF /* CoreGraphics.framework in Frameworks */,
 				48558544184611470018F9CF /* KiiSDK.framework in Frameworks */,
+				485586DE18461BBA0018F9CF /* FacebookSDK.framework in Frameworks */,
 				485584471845E7600018F9CF /* UIKit.framework in Frameworks */,
 				485584431845E7600018F9CF /* Foundation.framework in Frameworks */,
 			);
@@ -276,6 +279,7 @@
 		485584411845E7600018F9CF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				485586DD18461BBA0018F9CF /* FacebookSDK.framework */,
 				48558543184611470018F9CF /* KiiSDK.framework */,
 				485584791845E9870018F9CF /* Accounts.framework */,
 				485584771845E9720018F9CF /* Twitter.framework */,

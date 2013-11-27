@@ -23,6 +23,7 @@
 
 #import <KiiSDK/Kii.h>
 #import <QuartzCore/QuartzCore.h>
+#import "MHKiiHelper.h"
 
 @interface KTLoginViewController () {
     CGFloat _originalY;
@@ -35,6 +36,20 @@
 @implementation KTLoginViewController
 
 #pragma mark - Action methods
+
+- (void) performFacebook:(id)sender {
+    // show a loading screen to the user
+    [KTLoader showLoader:@"Logging in..." animated:TRUE];
+    
+    [[MHKiiHelper sharedInstance] registerWithFacebookAccountWithBlock:^(BOOL success) {
+        if (success) {
+            [self dismissViewControllerAnimated:YES completion:nil];
+            [KTLoader hideLoader];
+        } else {
+            [KTLoader showLoader:@"Error: login" animated:YES withIndicator:KTLoaderIndicatorError andHideInterval:KTLoaderDurationAuto];
+        }
+    }];
+}
 
 - (void) performAuthentication:(id)sender
 {
@@ -252,6 +267,14 @@
         [_loginButton addTarget:self action:@selector(performAuthentication:) forControlEvents:UIControlEventTouchUpInside];
         
         
+        // facebook button
+        _facebookButton = [[KTButton alloc] initWithFrame:CGRectMake(xOffset, (208 + 70), width, 45)
+                                        andGradientColors:lightOrange, darkOrange, nil];
+        
+        [_facebookButton setTitle:@"Use Facebook Account" forState:UIControlStateNormal];
+        [self.view addSubview:_facebookButton];
+        [_facebookButton addTarget:self action:@selector(performFacebook:) forControlEvents:UIControlEventTouchUpInside];
+
         
         // create and add the forgot password button
         _forgotButton = [UIButton buttonWithType:UIButtonTypeCustom];

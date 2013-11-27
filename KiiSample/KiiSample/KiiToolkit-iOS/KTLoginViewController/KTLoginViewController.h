@@ -55,6 +55,9 @@
 /** The button which initiates the authentication */
 @property (nonatomic, strong) KTButton *loginButton;
 
+/** The button which initiates the authentication with facebook account*/
+@property (nonatomic, strong) KTButton *facebookButton;
+
 /** The registration button. Sends the user to the registration view */
 @property (nonatomic, strong) KTButton *registerButton;
 

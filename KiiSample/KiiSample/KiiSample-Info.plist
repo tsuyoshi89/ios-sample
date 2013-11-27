@@ -41,5 +41,16 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>jp.miyano-harikyu.sample.KiiSample</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb255846174568822</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

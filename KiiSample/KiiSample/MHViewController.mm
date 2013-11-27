@@ -29,6 +29,31 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setTitle:@"unlink with facebook" forState:UIControlStateNormal];
+    button.frame = CGRectMake(30, 100, 200, 30);
+    [button addTarget:self action:@selector(unlink) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+    
+    button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setTitle:@"link with facebook" forState:UIControlStateNormal];
+    button.frame = CGRectMake(30, 50, 200, 30);
+    [button addTarget:self action:@selector(link) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+    
+
+    button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setTitle:@"post to facebook" forState:UIControlStateNormal];
+    button.frame = CGRectMake(30, 150, 200, 30);
+    [button addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+
+    button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setTitle:@"delete account" forState:UIControlStateNormal];
+    button.frame = CGRectMake(30, 200, 200, 30);
+    [button addTarget:self action:@selector(deleteAccount) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+
 }
 
 -(void)viewDidAppear:(BOOL)animated {
@@ -51,4 +76,26 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark - action
+- (void)unlink {
+    [[MHKiiHelper sharedInstance] unLinkWithFacebookAccountWithBlock:^(BOOL success) {
+        NSLog(@"did unlink:%d", success);
+    }];
+}
+
+- (void)link {
+    [[MHKiiHelper sharedInstance] linkWithFacebookAccountWithBlock:^(BOOL success) {
+        NSLog(@"did link:%d", success);
+    }];
+}
+
+- (void)post {
+    
+}
+
+- (void)deleteAccount {
+    [[MHKiiHelper sharedInstance] deleteAccountWithBlock:^(BOOL success) {
+        NSLog(@"did delete account:%d", success);
+    }];
+}
 @end

@@ -5,7 +5,7 @@
 
 - 9 Slice Scaling
 - バックグランドでバッジを更新
-
+- kii sample
 
 ## バージョン
 xCode(5.0.2)で作成し、iOS7(iPhone5)で動作確認しています。

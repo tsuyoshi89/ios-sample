@@ -6,7 +6,6 @@
 //  Copyright (c) 2013年 Tsuyoshi Miyano. All rights reserved.
 //
 
-#import "private.h"
 #import "MHAppDelegate.h"
 
 @implementation MHAppDelegate

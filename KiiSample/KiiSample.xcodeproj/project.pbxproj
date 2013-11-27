@@ -57,7 +57,6 @@
 		485584751845E91E0018F9CF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		485584771845E9720018F9CF /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		485584791845E9870018F9CF /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
-		4855847C1845EA5B0018F9CF /* private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = private.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,7 +129,6 @@
 				485584521845E7600018F9CF /* MHAppDelegate.m */,
 				485584541845E7600018F9CF /* Images.xcassets */,
 				485584491845E7600018F9CF /* Supporting Files */,
-				4855847C1845EA5B0018F9CF /* private.h */,
 			);
 			path = KiiSample;
 			sourceTree = "<group>";

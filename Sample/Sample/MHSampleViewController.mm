@@ -150,10 +150,14 @@
     }
 
     int num = [[UIApplication sharedApplication] applicationIconBadgeNumber];
+#if 0 /* 1MB file for debug */
     const int length = 1024 * 1024;
     void *bytes = malloc(length);//1MB
     memset(bytes, num, length);
     NSData *data = [NSData dataWithBytesNoCopy:bytes length:length freeWhenDone:YES];
+#else
+    NSData *data = [[NSString stringWithFormat:@"%d", num] dataUsingEncoding:NSUTF8StringEncoding];
+#endif
 
     if ([MHCloudHelper fileExistsAtURL:_containerURL]) {
         [MHCloudHelper writeDataAtURL:_containerURL data:data append:NO completion:^(BOOL success) {
@@ -181,11 +185,10 @@
     _containerURL = [[MHCloudHelper sharedInstance] documentsURLByAppendingPathComponent:@"badge.txt"];
     
     if ([MHCloudHelper fileExistsAtURL:_containerURL]) {
-#if 0
+#if 1
         NSData *data = [NSData dataWithContentsOfURL:_containerURL];
-        NSAssert(data.length == sizeof(int), @"invalid data!!");
-        int num;
-        memcpy(&num, data.bytes, sizeof(int));
+        NSString *stringData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        int num = [stringData intValue];
         [[UIApplication sharedApplication] setApplicationIconBadgeNumber:num];
         NSLog(@"load badge number:%d", num);
 #endif

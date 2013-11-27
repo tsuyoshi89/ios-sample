@@ -350,10 +350,10 @@ static void logging(MHCloudDocument *document, NSString *prefix) {
                               downloadPer, uploadPer, downloadErr, uploadErr];
                           
         NSLog(@"%@", infoText);
-#if 0
-                          NSMetadataUbiquitousItemDownloadingStatusNotDownloaded;// this item has not been downloaded yet. Use startDownloadingUbiquitousItemAtURL:error: to download it.
-                          NSMetadataUbiquitousItemDownloadingStatusDownloaded;// there is a local version of this item available. The most current version will get downloaded as soon as possible.
-                          NSMetadataUbiquitousItemDownloadingStatusCurrent;// there is a local version of this item and it is the most up-to-date version known to this device.
+#if 1
+        //NSMetadataUbiquitousItemDownloadingStatusNotDownloaded;// this item has not been downloaded yet. Use startDownloadingUbiquitousItemAtURL:error: to download it.
+        //NSMetadataUbiquitousItemDownloadingStatusDownloaded;// there is a local version of this item available. The most current version will get downloaded as soon as possible.
+        //NSMetadataUbiquitousItemDownloadingStatusCurrent;// there is a local version of this item and it is the most up-to-date version known to this device.
 
                           
         NSFileVersion *version = [NSFileVersion currentVersionOfItemAtURL:url];
@@ -365,6 +365,10 @@ static void logging(MHCloudDocument *document, NSString *prefix) {
         
         NSArray *versions = [NSFileVersion otherVersionsOfItemAtURL:url];
         NSLog(@"versions count:%lu", (unsigned long)versions.count);
+        
+        NSArray *unresolves = [NSFileVersion unresolvedConflictVersionsOfItemAtURL:url];
+        NSLog(@"unresolve versions count:%lu", (unsigned long)unresolves.count);
+
 #endif
         
         if ([status isEqualToString:NSMetadataUbiquitousItemDownloadingStatusNotDownloaded]) {
@@ -372,9 +376,9 @@ static void logging(MHCloudDocument *document, NSString *prefix) {
             [[NSFileManager defaultManager] startDownloadingUbiquitousItemAtURL:url error:&error];
             
             if (error == nil) {
-                NSLog(@"success download!!");
+                NSLog(@"success: starting download!!");
             } else {
-                NSLog(@"error download:%@!", error);
+                NSLog(@"error: starting download:%@!", error);
             }
         }
     }

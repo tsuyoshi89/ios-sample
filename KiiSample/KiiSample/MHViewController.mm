@@ -43,6 +43,9 @@
 
     self.navigationItem.title = @"Kii Cloud 管理ツール";
 
+    UIBarButtonItem *right = [[UIBarButtonItem alloc]initWithTitle:@"Logout" style:UIBarButtonItemStylePlain target:self action:@selector(logout)];
+    [self.navigationItem setRightBarButtonItem:right];
+    
     CGFloat posY = 80;
     NSArray *names = [self createField:posY label:@"Bucket Name:" placeFolder:@"input bucket name"];
     UITextField *label = [names objectAtIndex:0];
@@ -156,4 +159,11 @@
     }
     return FALSE;
 }
+
+- (void)logout {
+    [[MHKiiHelper sharedInstance] logout];
+    UIViewController *vc = [[KTLoginViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
 @end

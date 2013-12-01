@@ -89,8 +89,8 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
     }
 }
 
+static NSString *sTemporaryToken;
 - (void)loginWithBlock:(MHKiiCompletionBlock)block {
-    static NSString *sTemporaryToken;
     static NSString *sMethod = @"login";
     [self startLoadingFor:sMethod];
     
@@ -140,6 +140,14 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
     }];
 }
 
+- (void)logout {
+    [KiiUser logOut];
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    [ud removeObjectForKey:KiiPrefAccessToken];
+    [ud synchronize];
+    sTemporaryToken = nil;
+}
+
 - (void)deleteAccountWithBlock:(MHKiiCompletionBlock)block {
     [MHKiiHelper _deleteAccountWithBlock:block];
 }
@@ -186,13 +194,6 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
         }];
     } else {
         deleteBlock();
-    }
-}
-
-- (void)logout {
-    KiiUser *user = [KiiUser currentUser];
-    if (user) {
-        [KiiUser logOut];
     }
 }
 

@@ -21,9 +21,8 @@ typedef void (^MHKiiQueryResultBlock)(NSArray *results, KiiQuery *nextQuery, BOO
 
 + (MHKiiHelper *)sharedInstance;
 - (void)loginWithBlock:(MHKiiCompletionBlock)block;
-- (void)deleteAccountWithBlock:(MHKiiCompletionBlock)block;
 - (void)logout;
-
+- (void)deleteAccountWithBlock:(MHKiiCompletionBlock)block;
 
 //facebook callback
 + (BOOL)isLinkFacebook;

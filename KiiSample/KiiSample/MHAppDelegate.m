@@ -20,7 +20,9 @@
              andSite:kiiSiteJP];
         
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.rootViewController = [[MHViewController alloc]init];
+    UINavigationController *vc = [[UINavigationController alloc] init];
+    self.window.rootViewController = vc;
+    [vc pushViewController:[[MHViewController alloc]init] animated:NO];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];

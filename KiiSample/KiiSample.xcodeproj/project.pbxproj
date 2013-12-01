@@ -93,6 +93,9 @@
 		48558542184604750018F9CF /* MHViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48558541184604750018F9CF /* MHViewController.mm */; };
 		48558544184611470018F9CF /* KiiSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48558543184611470018F9CF /* KiiSDK.framework */; };
 		485586DE18461BBA0018F9CF /* FacebookSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485586DD18461BBA0018F9CF /* FacebookSDK.framework */; };
+		485586ED184AF1D60018F9CF /* MHSelectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 485586EC184AF1D60018F9CF /* MHSelectViewController.m */; };
+		485586F0184AF1F10018F9CF /* MHEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 485586EF184AF1F10018F9CF /* MHEditViewController.m */; };
+		485586F5184AF2D10018F9CF /* common.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485586F4184AF2D10018F9CF /* common.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -226,6 +229,11 @@
 		48558541184604750018F9CF /* MHViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHViewController.mm; sourceTree = "<group>"; };
 		48558543184611470018F9CF /* KiiSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = KiiSDK.framework; sourceTree = "<group>"; };
 		485586DD18461BBA0018F9CF /* FacebookSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FacebookSDK.framework; sourceTree = "<group>"; };
+		485586EB184AF1D60018F9CF /* MHSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHSelectViewController.h; sourceTree = "<group>"; };
+		485586EC184AF1D60018F9CF /* MHSelectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MHSelectViewController.m; sourceTree = "<group>"; };
+		485586EE184AF1F10018F9CF /* MHEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHEditViewController.h; sourceTree = "<group>"; };
+		485586EF184AF1F10018F9CF /* MHEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MHEditViewController.m; sourceTree = "<group>"; };
+		485586F4184AF2D10018F9CF /* common.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = common.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -304,7 +312,12 @@
 				485584491845E7600018F9CF /* Supporting Files */,
 				485584881845FF8D0018F9CF /* common.h */,
 				48558540184604750018F9CF /* MHViewController.h */,
+				485586F4184AF2D10018F9CF /* common.mm */,
 				48558541184604750018F9CF /* MHViewController.mm */,
+				485586EB184AF1D60018F9CF /* MHSelectViewController.h */,
+				485586EC184AF1D60018F9CF /* MHSelectViewController.m */,
+				485586EE184AF1F10018F9CF /* MHEditViewController.h */,
+				485586EF184AF1F10018F9CF /* MHEditViewController.m */,
 			);
 			path = KiiSample;
 			sourceTree = "<group>";
@@ -817,6 +830,7 @@
 				4855852C184604520018F9CF /* KTAlertBar.m in Sources */,
 				48558542184604750018F9CF /* MHViewController.mm in Sources */,
 				48558529184604520018F9CF /* CKRefreshArrowView.m in Sources */,
+				485586F0184AF1F10018F9CF /* MHEditViewController.m in Sources */,
 				4855853D184604520018F9CF /* KTNetworkingUtilities.m in Sources */,
 				48558536184604520018F9CF /* KTProgressIndicator.m in Sources */,
 				48558538184604520018F9CF /* NSMutableArray+KTUtilities.m in Sources */,
@@ -830,9 +844,11 @@
 				485584811845ED560018F9CF /* MHKiiHelper.mm in Sources */,
 				4855853B184604520018F9CF /* UIImage+KTUtilities.m in Sources */,
 				4855853A184604520018F9CF /* UIColor+KTUtilities.m in Sources */,
+				485586ED184AF1D60018F9CF /* MHSelectViewController.m in Sources */,
 				4855844F1845E7600018F9CF /* main.m in Sources */,
 				4855852E184604520018F9CF /* KTButton.m in Sources */,
 				48558528184604520018F9CF /* KTRegistrationViewController.m in Sources */,
+				485586F5184AF2D10018F9CF /* common.mm in Sources */,
 				4855852A184604520018F9CF /* KTTableViewController.m in Sources */,
 				485584531845E7600018F9CF /* MHAppDelegate.m in Sources */,
 				4855852F184604520018F9CF /* KTCircularProgressIndicator.m in Sources */,
@@ -956,12 +972,12 @@
 		4855846C1845E7600018F9CF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/tsuyoshi/work/ios-sample2/KiiSample",
-					"/Users/tsuyoshi/work/ios-sample/KiiSample",
+					"${PROJECT_DIR}",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "KiiSample/KiiSample-Prefix.pch";
@@ -975,12 +991,12 @@
 		4855846D1845E7600018F9CF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/tsuyoshi/work/ios-sample2/KiiSample",
-					"/Users/tsuyoshi/work/ios-sample/KiiSample",
+					"${PROJECT_DIR}",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "KiiSample/KiiSample-Prefix.pch";

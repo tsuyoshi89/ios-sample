@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>FacebookAppID</key>
+	<string>fb</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -48,7 +50,7 @@
 			<string>jp.miyano-harikyu.sample.KiiSample</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>fb255846174568822</string>
+				<string>fb</string>
 			</array>
 		</dict>
 	</array>

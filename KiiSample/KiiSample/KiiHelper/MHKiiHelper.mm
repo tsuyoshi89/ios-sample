@@ -6,10 +6,11 @@
 //  Copyright (c) 2013年 Kii. All rights reserved.
 //
 
+#include <FacebookSDK/FacebookSDK.h>
+
 #include "MHKiiHelper.h"
 #include "MHJob.h"
 #include "KiiObject+MHLib.h"
-
 
 static NSString *KiiPrefAccessToken = @"MHAccessToken";
 static NSString *KiiPrefFacebookToken = @"MHFacebookToken";
@@ -140,16 +141,20 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
 }
 
 - (void)deleteAccountWithBlock:(MHKiiCompletionBlock)block {
+    [MHKiiHelper _deleteAccountWithBlock:block];
+}
+
++ (void)_deleteAccountWithBlock:(MHKiiCompletionBlock)block {
     static NSString *sMethod = @"deleteAccount";
     
-    [self startLoadingFor:sMethod];
+    [[MHKiiHelper sharedInstance] startLoadingFor:sMethod];
 
     void (^responseBlock)(KiiUser *, NSError *) =  ^(KiiUser *user, NSError *error) {
         [MHJob runInMainThread:^{
             if (block) {
                 block(error == nil);
             }
-            [self endLoadingFor:sMethod error:error];
+            [[MHKiiHelper sharedInstance] endLoadingFor:sMethod error:error];
         }];
     };
 
@@ -161,7 +166,7 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
     }
     
     void (^deleteBlock)(void) = ^{
-        [self unLinkWithFacebookAccountWithBlock:^(BOOL success) {
+        [[MHKiiHelper sharedInstance] unLinkWithFacebookAccountWithBlock:^(BOOL success) {
             if (success) {
                 [user deleteWithBlock:responseBlock];
             } else {
@@ -170,9 +175,9 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
         }];
     };
     
-    
-    if ([_delegate respondsToSelector:@selector(onShouldUnregisterWithBlock:)]) {
-        [_delegate onShouldUnregisterWithBlock:^(BOOL ok) {
+    id<MHKiiHelperDelegate> delegate = [MHKiiHelper sharedInstance].delegate;
+    if ([delegate respondsToSelector:@selector(onShouldUnregisterWithBlock:)]) {
+        [delegate onShouldUnregisterWithBlock:^(BOOL ok) {
             if (!ok) {
                 responseBlock(user, [[NSError alloc] init]);
                 return;
@@ -268,6 +273,7 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
     [ud synchronize];
 }
 
+#ifdef YOUR_FACEBOOK_APP_ID
 - (void)didFacebookFinished:(KiiUser *)user
                usingNetwork:(KiiSocialNetworkName)network
                   withError:(NSError *)error {
@@ -280,7 +286,7 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
             if (error.code == 319 || [MHKiiHelper serverCodeIs:@"USER_NOT_LINKED" inError:error]) {
                 ok = TRUE;
             }
-            if ([MHKiiHelper serverCodeIs:@"FACEBOOK_USER_ALREADY_LINKED" inError:error]) {
+            if (error.code == 318 || [MHKiiHelper serverCodeIs:@"FACEBOOK_USER_ALREADY_LINKED" inError:error]) {
                 ok = TRUE;
             }
         }
@@ -313,33 +319,41 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
                 andCallback:@selector(didFacebookFinished:usingNetwork:withError:)];
     NSAssert(_facebookHandler == nil, @"unexpected handler");
     id<MHKiiHelperDelegate> delegate = _delegate;
+    
+    void (^registerToken)(void) = ^{
+        //success sign up  by face book account
+        NSString *ftoken = [KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
+        NSDate *fexpire = [KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
+        NSLog(@"facebook access token:%@", ftoken);;
+        NSLog(@"facebook token expires:%@",fexpire);
+        if (ftoken) {
+            NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+            [ud setObject:ftoken forKey:KiiPrefFacebookToken];
+            [ud setObject:fexpire forKey:KiiPrefFacebookExpire];
+            [ud synchronize];
+        }
+        [self registerFBAccessToken];
+    };
+    
     _facebookHandler = ^(BOOL registered) {
         if (registered) {
             if ([delegate respondsToSelector:@selector(onRegisteredWithBlock:)]) {
                 [delegate onRegisteredWithBlock:^(BOOL inited) {
                     if (inited) {
-                        //success sign up  by face book account
-                        NSString *ftoken = [KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
-                        NSDate *fexpire = [KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
-                        NSLog(@"facebook access token:%@", ftoken);;
-                        NSLog(@"facebook token expires:%@",fexpire);
-                        if (ftoken) {
-                            NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-                            [ud setObject:ftoken forKey:KiiPrefFacebookToken];
-                            [ud setObject:fexpire forKey:KiiPrefFacebookExpire];
-                            [ud synchronize];
-                        }
+                        registerToken();
                     } else {
                         [KiiSocialConnect unLinkCurrentUserWithNetwork:kiiSCNFacebook
                                                           withDelegate:nil
                                                            andCallback:nil];
-                        [self deleteAccountWithBlock:nil];
+                        [MHKiiHelper _deleteAccountWithBlock:nil];
                     }
                     if (block) {
                         block(inited);
                     }
                 }];
                 return;
+            } else {
+                registerToken();
             }
         }
         if (block) {
@@ -366,6 +380,9 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
                         andOptions:nil];
     // Link to the Facebook Account.
     [MHKiiHelper addApiCallCount:1];
+    //NSDictionary *permissions = @{@"publish_actions" : @YES,                                  @"email" : @YES};
+    //NSDictionary *params = @{@"permissions": permissions};
+    
     [KiiSocialConnect linkCurrentUserWithNetwork:kiiSCNFacebook
                                     usingOptions:nil
                                     withDelegate:self
@@ -439,8 +456,142 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
     return [code isEqualToString:server_code];
 }
 
-#pragma mark - debug methods
+- (void)registerFBAccessToken {
+    
+    FBSession *session = [[FBSession alloc] init];
+    [FBSession setActiveSession:session];
+    
+    [FBSession.activeSession openWithCompletionHandler:^(FBSession *session, FBSessionState status, NSError *error) {
+        NSLog(@"open session:%@, status:%d error:%@", session, status, error);
+       
 
+        NSString *strParam = [[NSString alloc] initWithFormat:@"SELECT uid, name, birthday_date, pic_square, pic_big FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())"];
+        // ロケールに "ja_JP" を設定
+        NSDictionary *params = @{strParam: @"q",
+                                 @"ja_JP": @"locale"};
+        
+        // FQL を投げる
+        [FBRequestConnection startWithGraphPath:@"/fql"
+                                     parameters:params
+                                     HTTPMethod:@"GET"
+                              completionHandler:^( FBRequestConnection *connection, id result, NSError *error) {
+                                  if (error) {
+                                      NSLog(@"Error: %@", [error localizedDescription]);
+                                  } else {
+                                      NSLog(@"Result: %@", result);
+                                      // "data" セクションに全フレンド情報が入っている
+                                      NSDictionary *arrFriends = [result objectForKey:@"data"];
+                                  }
+                              }];
+        
+    }];
+#if 0
+    NSString *fbToken = @"abc";// [KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
+    NSDate *fbExpire = [KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
+
+    FBAccessTokenData *tokenData = [FBAccessTokenData createTokenFromString:fbToken
+                                 permissions:nil//@[@"publish_actions"]
+                              expirationDate:fbExpire
+                                   loginType:FBSessionLoginTypeFacebookApplication
+                                 refreshDate:nil];
+    NSLog(@"tokenData:%@", tokenData);
+    
+    FBSessionTokenCachingStrategy *strategy = [[FBSessionTokenCachingStrategy alloc] initWithUserDefaultTokenInformationKeyName:KiiPrefFacebookToken];
+    [strategy cacheFBAccessTokenData:tokenData];
+    NSLog(@"strategy:%@", strategy);
+
+
+    
+    FBSession *session = [[FBSession alloc] initWithAppID:@"fb" YOUR_FACEBOOK_APP_ID
+                                              permissions:@[@"publish_actions"]
+                                          defaultAudience:FBSessionDefaultAudienceFriends
+                                          urlSchemeSuffix:nil
+                                       tokenCacheStrategy:nil];//strategy];
+    NSLog(@"session:%@", session);
+
+    [FBSession setActiveSession:session];
+    [session openFromAccessTokenData:tokenData completionHandler:^(FBSession *session, FBSessionState status, NSError *error) {
+        NSLog(@"open session:%@, status:%d error:%@", session, status, error);
+
+        [self postWithText:@"I'm loggin!"
+                 ImageName:nil
+                       URL:@"http://miyano-harikyu.jp/sola/devlog"
+                   Caption:@"test caption"
+                      Name:@"Kii Sample App"
+            andDescription:@"this is test description"];
+    }];
+#endif
+}
+
+-(void) postWithText: (NSString*) message
+              ImageName: (NSString*) image
+                    URL: (NSString*) url
+                Caption: (NSString*) caption
+                   Name: (NSString*) name
+         andDescription: (NSString*) description
+{
+    
+    NSDictionary* params = @{//url, @"link",
+                             name: @"name",
+                             //caption: @"caption",
+                             //description: @"description",
+                             message: @"message",
+                             //@"http://example.com/water.jpg": @"picture",
+                             //UIImagePNGRepresentation([UIImage imageNamed: image]): @"picture",
+                             };
+    
+    if ([FBSession.activeSession.permissions indexOfObject:@"publish_actions"] == NSNotFound) {
+        NSLog(@"No permissions found in session, ask for it");
+        [FBSession.activeSession requestNewPublishPermissions: @[@"publish_actions"]
+                                              defaultAudience: FBSessionDefaultAudienceFriends
+                                            completionHandler: ^(FBSession *session, NSError *error) {
+                                                NSLog(@"request new publish permissions!:%@", error);
+                                                if (!error) {
+                                                    // If permissions granted and not already posting then publish the story
+                                                    //if (!m_postingInProgress)
+                                                    [self postToWall: params];
+                                                }
+                                            }];
+    } else {
+        // If permissions present and not already posting then publish the story
+        //if (!m_postingInProgress)
+        [self postToWall: params];
+    }
+
+}
+
+- (void)postToWall:(NSDictionary*) params {
+    //m_postingInProgress = YES; //for not allowing multiple hits
+    
+#if 1
+    [FBRequestConnection startForMeWithCompletionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
+        NSLog(@"for me:%@ error:%@", result, error);
+        
+    }];
+#else
+    [FBRequestConnection startWithGraphPath:@"me/feed"
+                                 parameters:params
+                                 HTTPMethod:@"POST"
+                          completionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
+                              NSLog(@"facebook graph post:%@", error);
+                              if (error) {
+                                  //showing an alert for failure
+                                  UIAlertView *alertView = [[UIAlertView alloc]
+                                                            initWithTitle:@"Post Failed"
+                                                            message:error.localizedDescription
+                                                            delegate:nil
+                                                            cancelButtonTitle:@"OK"
+                                                            otherButtonTitles:nil];
+                                  [alertView show];
+                              }
+                              //m_postingInProgress = NO;
+                          }];
+#endif
+}
+
+#endif /* YOUR_FACEBOOK_ID */
+
+#pragma mark - debug methods
 
 + (void)dumpBucketOfUser:(NSString *)name {
 #ifdef DEBUG

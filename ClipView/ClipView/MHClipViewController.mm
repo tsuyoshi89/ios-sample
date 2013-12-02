@@ -116,7 +116,7 @@ const static CGRect kDefaultButtonRect = CGRectMake(0, 0, 60, 25);
     imageView.backgroundColor = [UIColor clearColor];
     imageView.frame = bounds;
     imageView.center = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
-    clipView.center = imageView.center;
+    clipView.center = CGPointMake(CGRectGetMidX(imageView.bounds), CGRectGetMidY(imageView.bounds));
 }
 
 - (void)viewDidAppear:(BOOL)animated {

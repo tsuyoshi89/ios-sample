@@ -309,7 +309,7 @@ static int tagImage = 400;
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-    image = [image resize:CGSizeMake(50, 50) backgroundColor:nil];
+    image = [image resize:CGSizeMake(200, 200) backgroundColor:nil];
     [[KiiManager sharedInstance] uploadData:UIImagePNGRepresentation(image)];
     [picker dismissViewControllerAnimated:YES completion:nil];
 }

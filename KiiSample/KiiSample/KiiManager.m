@@ -198,20 +198,24 @@
 }
 
 - (void)uploadData:(NSData *)data {
-    KiiObject *object = [KiiObject objectWithURI:self.object.objectURI];
-    [object _uploadBody:data withBlock:^(BOOL success) {
+    [self.object _uploadBody:data withBlock:^(BOOL success) {
         if (success) {
-            [self refreshObject:object.uuid];
+            [self refreshObject:self.object.uuid];
         }
     }];
 }
 
 - (void)downloadData:(void (^)(NSData *))block {
-    KiiObject *object = [KiiObject objectWithURI:self.object.objectURI];
-    [object _downloadBody:YES withBlock:^(BOOL success, NSData *data) {
+    [self.object _downloadBody:YES withBlock:^(BOOL success, NSData *data) {
         if (block) {
             block(data);
         }
+    }];
+}
+
+- (void)deleteBody {
+    [self.object _deleteBody:^(BOOL success) {
+        [self refreshObject:self.object.uuid];
     }];
 }
 @end

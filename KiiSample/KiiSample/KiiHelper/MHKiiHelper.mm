@@ -190,7 +190,8 @@ static NSString *sTemporaryToken;
         BOOL firstTime = FALSE;
         if (success) {
             NSString *token = [[KiiUser currentUser] accessToken];
-            if (![sTemporaryToken isEqualToString:token]) {
+            firstTime = ![sTemporaryToken isEqualToString:token];
+            if (firstTime) {
                 //first login for current user
                 sTemporaryToken = token;
                 [self enablePushNotification];

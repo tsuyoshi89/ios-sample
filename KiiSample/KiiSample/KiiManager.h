@@ -16,6 +16,7 @@
 - (void)refreshObject:(NSString *)uuid;
 - (void)save:(NSDictionary *)values;
 - (void)saveAll:(NSDictionary *)values widthDeleteKeys:(NSArray *)deleteKeys;
+- (void)deleteBody;
 - (void)uploadData:(NSData *)data;
 - (void)downloadData:(void (^)(NSData *data))block;
 

@@ -34,9 +34,12 @@
 - (BOOL)_refreshSynchronous:(KiiError **)outError;
 - (BOOL)_deleteSynchronous:(KiiError **)outError;
 
+- (void)_set:(NSDictionary *)values widthDeleteKeys:(NSArray *)deleteKeys;
+
 - (void)_uploadBody:(NSData *)data withBlock:(void (^)(BOOL))block;
 - (void)_downloadBody:(BOOL)force withBlock:(void(^)(BOOL success, NSData *data))block;
 - (NSData *)_bodyCache;
+- (void)_deleteBody:(void (^)(BOOL success))block;
 
 + (NSArray *)valueTypeNames;
 - (NSString *)typeNameForKey:(NSString *)key;

@@ -16,6 +16,7 @@
 #define MHClassName(obj) NSStringFromClass([(obj) class])
 
 static NSString *userDomain = @"kiicloud://users/";
+static NSString *KeyBody = @"mh_body";
 
 @implementation KiiUser (MHKiiHelper)
 + (NSString *)getObjectURI:(NSString *)uuid {
@@ -49,7 +50,7 @@ static NSString *userDomain = @"kiicloud://users/";
     if (obj) {
         NSAssert(MHLib_OBJC_CAST(NSNumber, obj), @"unexpected object type:%@", MHClassName(obj));
     } else {
-        NSLog(@"no object for:%@", key);
+        //NSLog(@"no object for:%@", key);
     }
     return [obj intValue];
 }
@@ -59,7 +60,7 @@ static NSString *userDomain = @"kiicloud://users/";
     if (obj) {
         NSAssert(MHLib_OBJC_CAST(NSString, obj), @"unexpected object type:%@", MHClassName(obj));
     } else {
-        NSLog(@"no object for:%@", key);
+        //NSLog(@"no object for:%@", key);
     }
     return obj;
 }
@@ -69,7 +70,7 @@ static NSString *userDomain = @"kiicloud://users/";
     if (obj) {
         NSAssert(MHLib_OBJC_CAST(NSNumber, obj), @"unexpected object type:%@", MHClassName(obj));
     } else {
-        NSLog(@"no object for:%@", key);
+        //NSLog(@"no object for:%@", key);
     }
     return [obj boolValue];
 }
@@ -79,7 +80,7 @@ static NSString *userDomain = @"kiicloud://users/";
     if (obj) {
         NSAssert(MHLib_OBJC_CAST(NSNumber, obj), @"unexpected object type:%@", MHClassName(obj));
     } else {
-        NSLog(@"no object for:%@", key);
+        //NSLog(@"no object for:%@", key);
     }
     return [obj doubleValue];
 }
@@ -206,6 +207,15 @@ static NSString *userDomain = @"kiicloud://users/";
     return success;
 }
 
+- (void)_set:(NSDictionary *)values widthDeleteKeys:(NSArray *)deleteKeys {
+    for (NSString *key in [values keyEnumerator]) {
+        [self setObject:[values objectForKey:key] forKey:key];
+    }
+    for (NSString *key in deleteKeys) {
+        [self removeObjectForKey:key];
+    }
+}
+
 - (NSString *)filePath {
     NSString *uuid = self.uuid;
     NSString *path = [MHFileHelper makeCachePath:[NSString stringWithFormat:@"%@.dat", uuid]];
@@ -236,10 +246,21 @@ static NSString *userDomain = @"kiicloud://users/";
     } andCompletionBlock:^(id<KiiRTransfer> transferObject, NSError *error) {
         KiiRTransferInfo *info = [transferObject info];
         NSLog(@"upload completion:%d, %d, %d, %@", info.completedSizeInBytes, info.totalSizeInBytes, info.status, error);
-        [[MHKiiHelper sharedInstance] endLoadingFor:MHKiiLoadingUpload error:error];
-        if (block) {
-            block(error == nil);
+
+        if (error == nil) {
+            [self _set:@{KeyBody: @YES} widthDeleteKeys:nil];
+            [MHJob runInWorkerThread:^{
+                KiiError *error;
+                [self _saveSynchronous:&error];
+            }];
         }
+        
+        [MHJob runInMainThread:^{
+            [[MHKiiHelper sharedInstance] endLoadingFor:MHKiiLoadingUpload error:error];
+            if (block) {
+                block(error == nil);
+            }
+        }];
     }];
 }
 
@@ -254,7 +275,16 @@ static NSString *userDomain = @"kiicloud://users/";
 
 - (void)_downloadBody:(BOOL)force withBlock:(void(^)(BOOL success, NSData *data))block {
     NSString *path = [self filePath];
-    
+
+    if (![self getBoolForKey:KeyBody]) {
+        [MHJob runInMainThread:^{
+            if (block) {
+                block(YES, nil);
+            }
+        }];
+        return;
+    }
+
     if (!force) {
         NSData *data = [self _bodyCache];
         if (data) {
@@ -266,7 +296,7 @@ static NSString *userDomain = @"kiicloud://users/";
             return;
         }
     }
-    
+
     [MHKiiHelper addApiCallCount:1];
     [[MHKiiHelper sharedInstance] startLoadingFor:MHKiiLoadingDownload];
     KiiObject *object = [KiiObject objectWithURI:self.objectURI];
@@ -286,6 +316,42 @@ static NSString *userDomain = @"kiicloud://users/";
                 NSAssert(data, @"unexpected null data!");
             }
             block(success, data);
+        }
+    }];
+}
+
+- (void)_deleteBody:(void (^)(BOOL success))block {
+    
+    if (![self getBoolForKey:KeyBody]) {
+        [MHJob runInMainThread:^{
+            NSString *path = [self filePath];
+            if ([MHFileHelper isFileAtPath:path]) {
+                [MHFileHelper removeItemAtPath:path];
+            }
+            if (block) {
+                block(YES);
+            }
+        }];
+    }
+    
+    [MHKiiHelper addApiCallCount:1];
+    [[MHKiiHelper sharedInstance] startLoadingFor:MHKiiLoadingDelete];
+    [self deleteBodyWithBlock:^(KiiObject *object, NSError *error) {
+        BOOL success = (error == nil) || (error.code == 510); // not exist
+        if (success) {
+            NSString *path = [self filePath];
+            if ([MHFileHelper isFileAtPath:path]) {
+                [MHFileHelper removeItemAtPath:path];
+            }
+            [self _set:@{KeyBody:@NO} widthDeleteKeys:nil];
+            [MHJob runInWorkerThread:^{
+                KiiError *error;
+                [self _saveSynchronous:&error];
+            }];
+        }
+        [[MHKiiHelper sharedInstance] endLoadingFor:MHKiiLoadingDelete error:error];
+        if (block) {
+            block(success);
         }
     }];
 }

@@ -100,15 +100,17 @@ static int tagImage = 400;
     valueField.tag = tagValueMin;
     typeButton.tag = tagTypeMin;
  
+#if 1//old code
     NSString *path = [MHFileHelper makeCachePath:[NSString stringWithFormat:@"%@.png", [KiiManager sharedInstance].object.uuid]];
     if ([MHFileHelper isFileAtPath:path]) {
         [MHFileHelper removeItemAtPath:path];
         NSLog(@"delete image file:%@", path);
     }
+#endif
 
     [self updateValues];
     
-    UITapGestureRecognizer *recog = [[UITapGestureRecognizer alloc] initWithTarget:nil action:nil];
+    UITapGestureRecognizer *recog = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
     recog.delegate = self;
     [self.view addGestureRecognizer:recog];
 
@@ -130,12 +132,25 @@ static int tagImage = 400;
     }
 }
 
+- (void)tap:(UITapGestureRecognizer *)recog {
+    UIView *view = [self.view viewWithTag:tagImage];
+    CGPoint pt = [recog locationInView:view];
+    if (CGRectContainsPoint(view.bounds,pt)) {
+        [[KiiManager sharedInstance] deleteBody];
+    }
+}
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     for (UIView *view in self.view.subviews) {
         if (view.isFirstResponder) {
             [view resignFirstResponder];
             break;;
         }
+    }
+
+    UIView *view = [self.view viewWithTag:tagImage];
+    CGPoint pt = [touch locationInView:view];
+    if (CGRectContainsPoint(view.bounds,pt)) {
+        return TRUE;
     }
     return FALSE;
 }
@@ -290,7 +305,7 @@ static int tagImage = 400;
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
     UIButton *button = (UIButton *)[self.view viewWithTag:tagTypeMin];
-    if ([button.titleLabel.text isEqualToString:@"Image"]) {
+    if ([button.titleLabel.text isEqualToString:@"Body"]) {
         [self showImagePicker];
         return FALSE;
     }
@@ -308,10 +323,7 @@ static int tagImage = 400;
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
     image = [image resize:CGSizeMake(50, 50) backgroundColor:nil];
-    NSString *path = [MHFileHelper makeCachePath:[NSString stringWithFormat:@"%@.png", [KiiManager sharedInstance].object.uuid]];
-    if ([MHFileHelper createFileAtPath:path contents:UIImagePNGRepresentation(image) attributes:nil]) {
-        [[KiiManager sharedInstance] uploadData:UIImagePNGRepresentation(image)];
-    }
+    [[KiiManager sharedInstance] uploadData:UIImagePNGRepresentation(image)];
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 

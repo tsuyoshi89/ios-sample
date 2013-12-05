@@ -8,10 +8,13 @@
 
 #import "common.h"
 
+#import <FacebookSDK/FacebookSDK.h>
+
 #import "MHKiiHelper.h"
 #import "MHViewController.h"
 #import "MHSelectViewController.h"
-#import <FacebookSDK/FacebookSDK.h>
+
+#import "KiiManager.h"
 
 
 @interface MHViewController () <UIGestureRecognizerDelegate>
@@ -112,14 +115,14 @@
 -(void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-    [[MHKiiHelper sharedInstance] loginWithBlock:^(BOOL success) {
+    [[MHKiiHelper sharedInstance] loginWithBlock:^(BOOL success, BOOL firstTime) {
         if (success) {
-            [self query];
+            if (firstTime) {
+                [self query];
+            }
         } else {
             UIViewController *vc = [[KTLoginViewController alloc] init];
-            [self presentViewController:vc animated:YES completion:^{
-                
-            }];
+            [self presentViewController:vc animated:YES completion:nil];
         }
     }];
     [[KiiManager sharedInstance] addObserver:self forKeyPath:@"object" options:NSKeyValueObservingOptionNew context:nil];

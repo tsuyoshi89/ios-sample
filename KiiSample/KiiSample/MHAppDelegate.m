@@ -6,8 +6,11 @@
 //  Copyright (c) 2013年 Tsuyoshi Miyano. All rights reserved.
 //
 
+#import "MHKiiHelper.h"
+
 #import "MHAppDelegate.h"
 #import "MHViewController.h"
+#import "KiiManager.h"
 
 @implementation MHAppDelegate
 
@@ -18,7 +21,9 @@
     [Kii beginWithID:YOUR_KII_APP_ID
               andKey:YOUR_KII_APP_KEY
              andSite:kiiSiteJP];
-        
+    
+    [KiiManager sharedInstance];
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     UINavigationController *vc = [[UINavigationController alloc] init];
     self.window.rootViewController = vc;

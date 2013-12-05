@@ -6,8 +6,14 @@
 //  Copyright (c) 2013年 Tsuyoshi Miyano. All rights reserved.
 //
 #import "common.h"
+
+#import "KiiObject+MHKiiHelper.h"
+
 #import "MHSelectViewController.h"
 #import "MHEditViewController.h"
+
+#import "KiiManager.h"
+
 @interface MHSelectViewController ()
 
 @end
@@ -61,7 +67,7 @@
     [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
         text = [text stringByAppendingString:[NSString stringWithFormat:@"%@(%@): %@\n",
                                               key,
-                                              [[KiiManager sharedInstance] typeName:value],
+                                              [object typeNameForKey:key],
                                               value]];
     }];
 
@@ -80,7 +86,7 @@
     [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
         text = [text stringByAppendingString:[NSString stringWithFormat:@"%@(%@): %@\n",
                                               key,
-                                              [[KiiManager sharedInstance] typeName:value],
+                                              [object typeNameForKey:key],
                                               value]];
     }];
 

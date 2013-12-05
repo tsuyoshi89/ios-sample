@@ -6,23 +6,42 @@
 //  Copyright (c) 2013年 Kii. All rights reserved.
 //
 
+#import "KiiObject+MHKiiHelper.h"
+
 typedef void (^MHKiiCompletionBlock)(BOOL success);
-typedef void (^MHKiiQueryResultBlock)(NSArray *results, KiiQuery *nextQuery, BOOL success);
+
+typedef enum {
+    MHKiiLoadingLogin = 1,
+    MHKiiLoadingDeleteAccount,
+    MHKiiLoadingSave,
+    MHKiiLoadingDelete,
+    MHKiiLoadingQuery,
+    MHKiiLoadingRefresh,
+    MHKiiLoadingUpload,
+    MHKiiLoadingDownload,
+} MHKiiLoading;
 
 @protocol MHKiiHelperDelegate <NSObject>
 @optional
-- (void)startLoadingFor:(NSString *)method;
-- (void)endLoadingFor:(NSString *)method error:(NSError *)error;
-- (void)onRegisteredWithBlock:(MHKiiCompletionBlock)block;
-- (void)onShouldUnregisterWithBlock:(MHKiiCompletionBlock)block;
+- (void)kiiStartLoadingFor:(MHKiiLoading)name count:(int)loadingCount;
+- (void)kiiEndLoadingFor:(MHKiiLoading)name error:(NSError *)error count:(int)loadingCount;
+- (BOOL)kiiInitializeAccount;//call in worker thread
+- (BOOL)kiiFinalizeAccount;//call in worker thead
 @end
 
 @interface MHKiiHelper : NSObject
 
 + (MHKiiHelper *)sharedInstance;
-- (void)loginWithBlock:(MHKiiCompletionBlock)block;
+
+- (void)startLoadingFor:(MHKiiLoading)name;
+- (void)endLoadingFor:(MHKiiLoading)name error:(NSError *)error;
+
+- (void)loginWithBlock:(void (^)(BOOL, BOOL))block;
 - (void)logout;
 - (void)deleteAccountWithBlock:(MHKiiCompletionBlock)block;
+- (void)pushInstall:(NSData *)deviceToken;
+- (void)pushUninstall;
+
 
 //facebook callback
 + (BOOL)isLinkFacebook;
@@ -33,8 +52,6 @@ typedef void (^MHKiiQueryResultBlock)(NSArray *results, KiiQuery *nextQuery, BOO
 - (KiiBucket *)bucketOfAppWithName:(NSString *)bucketName;
 - (KiiBucket *)bucketOfUserWithNamet:(NSString *)bucketName;
 
-- (NSArray *)excuteQuerySynchronous:(KiiBucket *)bucket query:(KiiQuery *)query withError:(KiiError **)pError;
-- (void)excuteQuery:(KiiBucket *)bucket query:(KiiQuery *)query withBlock:(MHKiiQueryResultBlock)block;
 
 + (NSString *)currentDeviceId;
 

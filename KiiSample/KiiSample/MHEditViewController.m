@@ -7,15 +7,23 @@
 //
 
 #import "common.h"
-#import "MHEditViewController.h"
 
-@interface MHEditViewController () <UIPickerViewDelegate, UIPickerViewDataSource, UIActionSheetDelegate, UIGestureRecognizerDelegate>
+#import "KiiObject+MHKiiHelper.h"
+
+#import "MHEditViewController.h"
+#import "MHImage.h"
+#import "MHFileHelper.h"
+
+#import "KiiManager.h"
+
+@interface MHEditViewController () <UIPickerViewDelegate, UIPickerViewDataSource, UIActionSheetDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
 @end
 
 static int tagKeyMin = 100;
 static int tagValueMin = 200;
 static int tagTypeMin = 300;
+static int tagImage = 400;
 
 @implementation MHEditViewController {
     UIScrollView *_view;
@@ -82,6 +90,7 @@ static int tagTypeMin = 300;
     frame = valueField.frame;
     frame.size.width = 180;
     valueField.frame = frame;
+    valueField.delegate = self;
     UIButton *typeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     [typeButton setTitle:@"String" forState:UIControlStateNormal];
     typeButton.frame = CGRectMake(CGRectGetMaxX(valueField.frame), posY - 10, 60, 50);
@@ -91,6 +100,12 @@ static int tagTypeMin = 300;
     valueField.tag = tagValueMin;
     typeButton.tag = tagTypeMin;
  
+    NSString *path = [MHFileHelper makeCachePath:[NSString stringWithFormat:@"%@.png", [KiiManager sharedInstance].object.uuid]];
+    if ([MHFileHelper isFileAtPath:path]) {
+        [MHFileHelper removeItemAtPath:path];
+        NSLog(@"delete image file:%@", path);
+    }
+
     [self updateValues];
     
     UITapGestureRecognizer *recog = [[UITapGestureRecognizer alloc] initWithTarget:nil action:nil];
@@ -136,14 +151,15 @@ static int tagTypeMin = 300;
         [[self.view viewWithTag:tagValueMin + i] removeFromSuperview];
         [[self.view viewWithTag:tagTypeMin + i] removeFromSuperview];
     }
+    [[self.view viewWithTag:tagImage] removeFromSuperview];
     
     __block CGFloat posY = CGRectGetMaxY([self.view viewWithTag:tagKeyMin].frame);
     __block int tagKey = tagKeyMin + 1;
     __block int tagValue = tagValueMin +1;
     __block int tagType = tagTypeMin + 1;
 
-    
-    NSDictionary *dict = [[KiiManager sharedInstance].object dictionaryValue];
+    KiiObject *object = [KiiManager sharedInstance].object;
+    NSDictionary *dict = [object dictionaryValue];
     [dict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         NSArray *fields = [self createField:posY label:key placeFolder:@""];
         UITextField *keyField = [fields objectAtIndex:0];
@@ -152,7 +168,7 @@ static int tagTypeMin = 300;
         frame.size.width = 180;
         valueField.frame = frame;
         UIButton *typeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [typeButton setTitle:[[KiiManager sharedInstance] typeName:obj] forState:UIControlStateNormal];
+        [typeButton setTitle:[object typeNameForKey:key] forState:UIControlStateNormal];
         typeButton.frame = CGRectMake(CGRectGetMaxX(valueField.frame), posY - 10, 60, 50);
         [typeButton addTarget:self action:@selector(tapType:) forControlEvents:UIControlEventTouchUpInside];
         [self.view addSubview:typeButton];
@@ -166,7 +182,16 @@ static int tagTypeMin = 300;
         
         posY += 40;
     }];
-    
+
+    UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(100, posY, 160, 160)];
+    imageView.tag = tagImage;
+    [self.view addSubview:imageView];
+    [[KiiManager sharedInstance] downloadData:^(NSData *data) {
+        imageView.image = [UIImage imageWithData:data];
+    }];
+
+    posY += 160;
+
     [_view setContentSize:CGSizeMake(self.view.frame.size.width, posY)];
 }
 
@@ -228,17 +253,17 @@ static int tagTypeMin = 300;
 }
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
-    return [[KiiManager sharedInstance] valueTypes].count;
+    return [KiiObject valueTypeNames].count;
 }
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
-    return [[[KiiManager sharedInstance] valueTypeNames] objectAtIndex:row];
+    return [[KiiObject valueTypeNames] objectAtIndex:row];
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
     UIPickerView *picker = (UIPickerView *)[[actionSheet subviews] lastObject];
     int row = [picker selectedRowInComponent:0];
-    NSString *name = [[KiiManager sharedInstance].valueTypeNames objectAtIndex:row];
+    NSString *name = [[KiiObject valueTypeNames] objectAtIndex:row];
     [actionSheet dismissWithClickedButtonIndex:buttonIndex animated:YES];
     UIButton *button = (UIButton *)[self.view viewWithTag:picker.tag];
     [button setTitle:name forState:UIControlStateNormal];
@@ -259,6 +284,39 @@ static int tagTypeMin = 300;
     [sheet addSubview:picker];
     [sheet setBounds:CGRectMake(0, 0, 320, 415)];
     sheet.delegate = self;
+}
+
+#pragma mark - text field delegate
+
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
+    UIButton *button = (UIButton *)[self.view viewWithTag:tagTypeMin];
+    if ([button.titleLabel.text isEqualToString:@"Image"]) {
+        [self showImagePicker];
+        return FALSE;
+    }
+    return TRUE;
+}
+
+- (void)showImagePicker {
+    UIImagePickerController *ipc = [[UIImagePickerController alloc] init];
+    ipc.delegate = self;
+    ipc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    //ipc.allowsEditing = YES;
+    [self presentViewController:ipc animated:YES completion:nil];
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    image = [image resize:CGSizeMake(50, 50) backgroundColor:nil];
+    NSString *path = [MHFileHelper makeCachePath:[NSString stringWithFormat:@"%@.png", [KiiManager sharedInstance].object.uuid]];
+    if ([MHFileHelper createFileAtPath:path contents:UIImagePNGRepresentation(image) attributes:nil]) {
+        [[KiiManager sharedInstance] uploadData:UIImagePNGRepresentation(image)];
+    }
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 

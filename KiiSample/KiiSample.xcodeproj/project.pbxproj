@@ -24,7 +24,7 @@
 		4855847B1845E9990018F9CF /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 485584771845E9720018F9CF /* Twitter.framework */; };
 		485584811845ED560018F9CF /* MHKiiHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485584801845ED560018F9CF /* MHKiiHelper.mm */; };
 		485584841845EDFB0018F9CF /* MHJob.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485584831845EDFB0018F9CF /* MHJob.mm */; };
-		485584871845F07E0018F9CF /* KiiObject+MHLib.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485584861845F07E0018F9CF /* KiiObject+MHLib.mm */; };
+		485584871845F07E0018F9CF /* KiiObject+MHKiiHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485584861845F07E0018F9CF /* KiiObject+MHKiiHelper.mm */; };
 		485584FF184604520018F9CF /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4855848A184604520018F9CF /* .gitignore */; };
 		48558500184604520018F9CF /* NSMutableArray+KTUtilities.html in Resources */ = {isa = PBXBuildFile; fileRef = 4855848E184604520018F9CF /* NSMutableArray+KTUtilities.html */; };
 		48558501184604520018F9CF /* NSString+KTUtilities.html in Resources */ = {isa = PBXBuildFile; fileRef = 4855848F184604520018F9CF /* NSString+KTUtilities.html */; };
@@ -96,6 +96,10 @@
 		485586ED184AF1D60018F9CF /* MHSelectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 485586EC184AF1D60018F9CF /* MHSelectViewController.m */; };
 		485586F0184AF1F10018F9CF /* MHEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 485586EF184AF1F10018F9CF /* MHEditViewController.m */; };
 		485586F5184AF2D10018F9CF /* common.mm in Sources */ = {isa = PBXBuildFile; fileRef = 485586F4184AF2D10018F9CF /* common.mm */; };
+		48915ED5184C9C6B00212EC7 /* sample.png in Resources */ = {isa = PBXBuildFile; fileRef = 48915ED4184C9C6B00212EC7 /* sample.png */; };
+		48915ED8184C9F7800212EC7 /* MHImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 48915ED7184C9F7800212EC7 /* MHImage.m */; };
+		48915EDB184C9FE300212EC7 /* MHFileHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48915EDA184C9FE300212EC7 /* MHFileHelper.mm */; };
+		48915F861850324500212EC7 /* KiiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 48915F851850324500212EC7 /* KiiManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -133,8 +137,8 @@
 		485584801845ED560018F9CF /* MHKiiHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = MHKiiHelper.mm; path = KiiHelper/MHKiiHelper.mm; sourceTree = "<group>"; };
 		485584821845EDFB0018F9CF /* MHJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MHJob.h; path = KiiHelper/MHJob.h; sourceTree = "<group>"; };
 		485584831845EDFB0018F9CF /* MHJob.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = MHJob.mm; path = KiiHelper/MHJob.mm; sourceTree = "<group>"; };
-		485584851845F07E0018F9CF /* KiiObject+MHLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "KiiObject+MHLib.h"; path = "KiiHelper/KiiObject+MHLib.h"; sourceTree = "<group>"; };
-		485584861845F07E0018F9CF /* KiiObject+MHLib.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = "KiiObject+MHLib.mm"; path = "KiiHelper/KiiObject+MHLib.mm"; sourceTree = "<group>"; };
+		485584851845F07E0018F9CF /* KiiObject+MHKiiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "KiiObject+MHKiiHelper.h"; path = "KiiHelper/KiiObject+MHKiiHelper.h"; sourceTree = "<group>"; };
+		485584861845F07E0018F9CF /* KiiObject+MHKiiHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = "KiiObject+MHKiiHelper.mm"; path = "KiiHelper/KiiObject+MHKiiHelper.mm"; sourceTree = "<group>"; };
 		485584881845FF8D0018F9CF /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
 		4855848A184604520018F9CF /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		4855848E184604520018F9CF /* NSMutableArray+KTUtilities.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = "NSMutableArray+KTUtilities.html"; sourceTree = "<group>"; };
@@ -234,6 +238,13 @@
 		485586EE184AF1F10018F9CF /* MHEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHEditViewController.h; sourceTree = "<group>"; };
 		485586EF184AF1F10018F9CF /* MHEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MHEditViewController.m; sourceTree = "<group>"; };
 		485586F4184AF2D10018F9CF /* common.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = common.mm; sourceTree = "<group>"; };
+		48915ED4184C9C6B00212EC7 /* sample.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = sample.png; path = KiiSample/sample.png; sourceTree = "<group>"; };
+		48915ED6184C9F7800212EC7 /* MHImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHImage.h; sourceTree = "<group>"; };
+		48915ED7184C9F7800212EC7 /* MHImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MHImage.m; sourceTree = "<group>"; };
+		48915ED9184C9FE300212EC7 /* MHFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHFileHelper.h; sourceTree = "<group>"; };
+		48915EDA184C9FE300212EC7 /* MHFileHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHFileHelper.mm; sourceTree = "<group>"; };
+		48915F841850324500212EC7 /* KiiManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KiiManager.h; sourceTree = "<group>"; };
+		48915F851850324500212EC7 /* KiiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KiiManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -268,6 +279,7 @@
 		485584361845E7600018F9CF = {
 			isa = PBXGroup;
 			children = (
+				48915ED3184C9C3500212EC7 /* Resources */,
 				485584481845E7600018F9CF /* KiiSample */,
 				485584611845E7600018F9CF /* KiiSampleTests */,
 				485584411845E7600018F9CF /* Frameworks */,
@@ -318,6 +330,8 @@
 				485586EC184AF1D60018F9CF /* MHSelectViewController.m */,
 				485586EE184AF1F10018F9CF /* MHEditViewController.h */,
 				485586EF184AF1F10018F9CF /* MHEditViewController.m */,
+				48915F841850324500212EC7 /* KiiManager.h */,
+				48915F851850324500212EC7 /* KiiManager.m */,
 			);
 			path = KiiSample;
 			sourceTree = "<group>";
@@ -354,8 +368,12 @@
 		4855847E1845EC710018F9CF /* MHLib */ = {
 			isa = PBXGroup;
 			children = (
-				485584851845F07E0018F9CF /* KiiObject+MHLib.h */,
-				485584861845F07E0018F9CF /* KiiObject+MHLib.mm */,
+				48915ED6184C9F7800212EC7 /* MHImage.h */,
+				48915ED7184C9F7800212EC7 /* MHImage.m */,
+				48915ED9184C9FE300212EC7 /* MHFileHelper.h */,
+				48915EDA184C9FE300212EC7 /* MHFileHelper.mm */,
+				485584851845F07E0018F9CF /* KiiObject+MHKiiHelper.h */,
+				485584861845F07E0018F9CF /* KiiObject+MHKiiHelper.mm */,
 				485584821845EDFB0018F9CF /* MHJob.h */,
 				485584831845EDFB0018F9CF /* MHJob.mm */,
 				4855847F1845ED560018F9CF /* MHKiiHelper.h */,
@@ -684,6 +702,14 @@
 			path = UIView;
 			sourceTree = "<group>";
 		};
+		48915ED3184C9C3500212EC7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				48915ED4184C9C6B00212EC7 /* sample.png */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -762,6 +788,7 @@
 			files = (
 				4855850C184604520018F9CF /* KTImageView.html in Resources */,
 				4855850B184604520018F9CF /* KTForgotPasswordViewController.html in Resources */,
+				48915ED5184C9C6B00212EC7 /* sample.png in Resources */,
 				48558511184604520018F9CF /* KTRegistrationViewController.html in Resources */,
 				48558524184604520018F9CF /* kt_login_kii_logo.png in Resources */,
 				4855844D1845E7600018F9CF /* InfoPlist.strings in Resources */,
@@ -828,6 +855,7 @@
 				4855852D184604520018F9CF /* KTAlertToast.m in Sources */,
 				48558527184604520018F9CF /* KTLoginViewController.m in Sources */,
 				4855852C184604520018F9CF /* KTAlertBar.m in Sources */,
+				48915ED8184C9F7800212EC7 /* MHImage.m in Sources */,
 				48558542184604750018F9CF /* MHViewController.mm in Sources */,
 				48558529184604520018F9CF /* CKRefreshArrowView.m in Sources */,
 				485586F0184AF1F10018F9CF /* MHEditViewController.m in Sources */,
@@ -835,12 +863,14 @@
 				48558536184604520018F9CF /* KTProgressIndicator.m in Sources */,
 				48558538184604520018F9CF /* NSMutableArray+KTUtilities.m in Sources */,
 				48558535184604520018F9CF /* KTLoader.m in Sources */,
+				48915EDB184C9FE300212EC7 /* MHFileHelper.mm in Sources */,
 				4855852B184604520018F9CF /* KTAlert.m in Sources */,
 				48558539184604520018F9CF /* NSString+KTUtilities.m in Sources */,
 				48558537184604520018F9CF /* KTTextField.m in Sources */,
+				48915F861850324500212EC7 /* KiiManager.m in Sources */,
 				485584841845EDFB0018F9CF /* MHJob.mm in Sources */,
 				48558530184604520018F9CF /* KTImageView.m in Sources */,
-				485584871845F07E0018F9CF /* KiiObject+MHLib.mm in Sources */,
+				485584871845F07E0018F9CF /* KiiObject+MHKiiHelper.mm in Sources */,
 				485584811845ED560018F9CF /* MHKiiHelper.mm in Sources */,
 				4855853B184604520018F9CF /* UIImage+KTUtilities.m in Sources */,
 				4855853A184604520018F9CF /* UIColor+KTUtilities.m in Sources */,

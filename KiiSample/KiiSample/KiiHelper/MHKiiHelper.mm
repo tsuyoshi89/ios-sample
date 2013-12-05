@@ -10,12 +10,14 @@
 
 #include "MHKiiHelper.h"
 #include "MHJob.h"
-#include "KiiObject+MHLib.h"
+#include "KiiObject+MHKiiHelper.h"
 
-static NSString *KiiPrefAccessToken = @"MHAccessToken";
-static NSString *KiiPrefFacebookToken = @"MHFacebookToken";
-static NSString *KiiPrefFacebookExpire = @"MHFacebookExpire";
-static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
+static NSString *KiiHelperBucketName = @"mh_helper";
+static NSString *KiiPrefVersion = @"mh_version";
+static NSString *KiiPrefAccessToken = @"mh_token";
+static NSString *KiiPrefFacebookToken = @"fb_token";
+static NSString *KiiPrefFacebookExpire = @"fb_expire";
+static NSString *KiiPrefKeyApiCallCount = @"mh_count";
 
 @interface MHKiiHelper ()
 + (KiiUser *)authenticateWithTokenSynchronous:(NSString *)accessToken andError:(KiiError **)error;
@@ -23,6 +25,7 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
 
 @implementation MHKiiHelper {
     MHKiiCompletionBlock _facebookHandler;
+    int _loadingCount;
 }
 
 + (MHKiiHelper *)sharedInstance{
@@ -33,13 +36,24 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
     return instance;
 }
 
+// add below code to your AppDelegate.m
+//- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
+//{
+//    NSLog(@"Success to get token: %@", deviceToken);
+//    [[MHKiiHelper sharedInstance] pushInstall:deviceToken]
+//}
+//
+//- (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error
+//{
+//    NSLog(@"Failed to get token, error: %@", error);
+//}
+//
 
-- (void)pushInstall:(NSString *)deviceToken {
-    NSData *token = [deviceToken dataUsingEncoding:NSUTF8StringEncoding];
+- (void)pushInstall:(NSData *)deviceToken {
     NSAssert([KiiUser loggedIn], @"user must be logined before");
 
     //Hold deviceToken into Kii shared instance
-    [Kii setAPNSDeviceToken:token];
+    [Kii setAPNSDeviceToken:deviceToken];
     
     [KiiPushInstallation installWithBlock:^(KiiPushInstallation *installation, NSError *error) {
         if(error == nil) {
@@ -77,25 +91,123 @@ static NSString *KiiPrefKeyApiCallCount = @"MHKiiApiCount";
 #endif
 }
 
-- (void)startLoadingFor:(NSString *)method {
-    if ([_delegate respondsToSelector:@selector(startLoadingFor:)]) {
-        [_delegate startLoadingFor:method];
+- (void)startLoadingFor:(MHKiiLoading)name {
+    _loadingCount++;
+    if ([_delegate respondsToSelector:@selector(kiiStartLoadingFor:count:)]) {
+        [_delegate kiiStartLoadingFor:name count:_loadingCount];
     }
 }
 
-- (void)endLoadingFor:(NSString *)method error:(NSError *)error  {
-    if ([_delegate respondsToSelector:@selector(endLoadingFor:error:)]) {
-        [_delegate endLoadingFor:method error:error];
+- (void)endLoadingFor:(MHKiiLoading)name error:(NSError *)error  {
+    NSParameterAssert(_loadingCount > 0);
+    if ([_delegate respondsToSelector:@selector(kiiEndLoadingFor:error:count:)]) {
+        [_delegate kiiEndLoadingFor:name error:error count:_loadingCount];
     }
+    _loadingCount--;
+}
+
+- (void)setupAccount:(void (^)(BOOL))block {
+    [MHJob runInWorkerThread:^{
+        KiiUser *user = [KiiUser currentUser];
+        NSAssert(user, @"user must be loggined!");
+        NSString *token = [user accessToken];
+        NSAssert(token, @"unexpected null token");
+        
+        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+        NSString *oldToken = [ud objectForKey:KiiPrefAccessToken];
+        NSString *version;
+        if ([token isEqualToString:oldToken]) {
+            version = [ud objectForKey:KiiPrefVersion];
+        }
+        
+        BOOL initialized = (version && [version intValue] > 0);
+        
+        if (!initialized) {
+            KiiBucket *bucket = [user bucketWithName:KiiHelperBucketName];
+            KiiQuery *query = [KiiQuery queryWithClause:nil];
+            query.limit = 1;
+            KiiError *error;
+            NSArray *array = [bucket _excuteQuerySynchronous:query withError:&error];
+            if (array.count > 0) {
+                KiiObject *object = [array lastObject];
+                version = [object getStringForKey:KiiPrefVersion];
+            }
+            initialized = (version && [version intValue] > 0);
+            
+            
+            if (!initialized) {
+                initialized = TRUE;
+                if ([_delegate respondsToSelector:@selector(kiiInitializeAccount)]) {
+                    initialized = [_delegate kiiInitializeAccount];
+                }
+                
+                if (initialized) {
+                    NSString *latestVersion = @"1";
+                    KiiObject *object = [bucket createObject];
+                    [object setStringValue:latestVersion forKey:KiiPrefVersion];
+                    KiiError *error;
+                    [object _saveSynchronous:&error];
+                    initialized = (error == nil);
+                    if (initialized) {
+                        version = latestVersion;
+                    }
+                }
+            }
+            
+            if (initialized) {
+                [ud setObject:token forKey:KiiPrefAccessToken];
+                [ud setObject:version forKey:KiiPrefVersion];
+                
+                NSDictionary *dict = [KiiSocialConnect getAccessTokenDictionaryForNetwork:kiiSCNFacebook];
+                NSString *ftoken = [dict objectForKey:@"access_token"];//[KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
+                NSDate *fexpire = [dict objectForKey:@"access_token_expires"];//[KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
+                NSLog(@"facebook access token:%@", ftoken);;
+                NSLog(@"facebook token expires:%@",fexpire);
+                
+                if (ftoken) {
+                    [ud setObject:ftoken forKey:KiiPrefFacebookToken];
+                    [ud setObject:fexpire forKey:KiiPrefFacebookExpire];
+                }
+                [ud synchronize];
+            }
+        }
+        
+        [MHJob runInMainThread:^{
+            if (block) {
+                block(initialized);
+            }
+        }];
+    }];
 }
 
 static NSString *sTemporaryToken;
-- (void)loginWithBlock:(MHKiiCompletionBlock)block {
-    static NSString *sMethod = @"login";
-    [self startLoadingFor:sMethod];
+
+- (void)loginWithBlock:(void (^)(BOOL, BOOL))block {
+    static MHKiiLoading sName = MHKiiLoadingLogin;
+    [self startLoadingFor:sName];
     
-    // if the user is logged in
+    void (^setupBlock)(BOOL) = ^(BOOL success) {
+        BOOL firstTime = FALSE;
+        if (success) {
+            NSString *token = [[KiiUser currentUser] accessToken];
+            if (![sTemporaryToken isEqualToString:token]) {
+                //first login for current user
+                sTemporaryToken = token;
+                [self enablePushNotification];
+            }
+        } else {
+            sTemporaryToken = nil;
+        }
+        if (block) {
+            block(success, firstTime);
+        }
+        NSError *error = success ? nil : [NSError errorWithDomain:@"mh" code:0 userInfo:@{@"description":@"failed to setup account"}];
+        [self endLoadingFor:sName error:error];
+    };
+
+    // if the user is not logged in, check saved access token;
     if (![KiiUser loggedIn]) {
+        sTemporaryToken = nil;
         //load token
         NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
         NSString *accessToken = [ud stringForKey:KiiPrefAccessToken];
@@ -103,47 +215,40 @@ static NSString *sTemporaryToken;
             [MHJob runInWorkerThread:^{
                 KiiError *error;
                 [MHKiiHelper authenticateWithTokenSynchronous:accessToken andError:&error];
-                [MHJob runInMainThread:^{
-                    if (error == nil && !sTemporaryToken) {
-                        //first login
-                        sTemporaryToken = accessToken;
-                        [self enablePushNotification];
-                    }
-                    if (block) {
-                        block(error == nil);
-                    }
-                    [self endLoadingFor:sMethod error:error];
-                }];
+                BOOL success = (error == nil);
+                if (success) {
+                    [self setupAccount:setupBlock];
+                } else {
+                    [MHJob runInMainThread:^{
+                        setupBlock(FALSE);
+                    }];
+                }
             }];
             return;
         }
     }
     
-    [MHJob runInMainThread:^{
-        BOOL ok = [KiiUser loggedIn];
-        if (ok) {
-            NSString *accessToken = [[KiiUser currentUser] accessToken];
-            if (![sTemporaryToken isEqualToString:accessToken]) {
-                //first login for current user
-                NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-                [ud setObject:accessToken forKey:KiiPrefAccessToken];
-                [ud synchronize];
-                sTemporaryToken = accessToken;
-                [self enablePushNotification];
-            }
-        }
-        if (block) {
-            block(ok);
-        }
-        NSError *error = ok ? nil : [[NSError alloc] init];
-        [self endLoadingFor:sMethod error:error];
-    }];
+    BOOL success = [KiiUser loggedIn];
+    if (success) {
+        [self setupAccount:setupBlock];
+    } else {
+        [MHJob runInMainThread:^{
+            setupBlock(FALSE);
+        }];
+    }
 }
 
 - (void)logout {
     [KiiUser logOut];
+    [self clearAuthInfo];
+}
+
+- (void)clearAuthInfo {
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
     [ud removeObjectForKey:KiiPrefAccessToken];
+    [ud removeObjectForKey:KiiPrefVersion];
+    [ud removeObjectForKey:KiiPrefFacebookToken];
+    [ud removeObjectForKey:KiiPrefFacebookExpire];
     [ud synchronize];
     sTemporaryToken = nil;
 }
@@ -153,48 +258,49 @@ static NSString *sTemporaryToken;
 }
 
 + (void)_deleteAccountWithBlock:(MHKiiCompletionBlock)block {
-    static NSString *sMethod = @"deleteAccount";
+    static MHKiiLoading sName = MHKiiLoadingDeleteAccount;
     
-    [[MHKiiHelper sharedInstance] startLoadingFor:sMethod];
+    [[MHKiiHelper sharedInstance] startLoadingFor:sName];
 
-    void (^responseBlock)(KiiUser *, NSError *) =  ^(KiiUser *user, NSError *error) {
+    void (^responseBlock)(NSError *) = ^(NSError *error) {
         [MHJob runInMainThread:^{
+            BOOL success = (error == nil);
             if (block) {
-                block(error == nil);
+                block(success);
             }
-            [[MHKiiHelper sharedInstance] endLoadingFor:sMethod error:error];
+            [[MHKiiHelper sharedInstance] endLoadingFor:sName error:error];
         }];
     };
 
     KiiUser *user = [KiiUser currentUser];
     if (!user) {
-        NSLog(@"no current user!");
-        responseBlock(nil, [[NSError alloc] init]);
+        NSError *error = [NSError errorWithDomain:@"mh" code:0 userInfo:@{@"description":@"no current uesr"}];
+        responseBlock(error);
         return;
     }
     
-    void (^deleteBlock)(void) = ^{
-        [[MHKiiHelper sharedInstance] unLinkWithFacebookAccountWithBlock:^(BOOL success) {
-            if (success) {
-                [user deleteWithBlock:responseBlock];
-            } else {
-                responseBlock(user, [[NSError alloc] init]);
-            }
-        }];
-    };
-    
     id<MHKiiHelperDelegate> delegate = [MHKiiHelper sharedInstance].delegate;
-    if ([delegate respondsToSelector:@selector(onShouldUnregisterWithBlock:)]) {
-        [delegate onShouldUnregisterWithBlock:^(BOOL ok) {
-            if (!ok) {
-                responseBlock(user, [[NSError alloc] init]);
-                return;
+
+    [MHJob runInWorkerThread:^{
+        KiiError *error;
+        BOOL success = FALSE;
+        BOOL finalized = TRUE;
+        if ([delegate respondsToSelector:@selector(kiiFinalizeAccount)]) {
+            finalized = [delegate kiiFinalizeAccount];
+        }
+        if (finalized) {
+            [MHKiiHelper addApiCallCount:1];
+            [user deleteSynchronous:&error];
+            success = (error == nil);
+            NSAssert(success, @"user delete:%@", error);
+            if (success) {
+                [[MHKiiHelper sharedInstance] clearAuthInfo];
             }
-            deleteBlock();
-        }];
-    } else {
-        deleteBlock();
-    }
+        } else {
+            error = [KiiError errorWithDomain:@"mh" code:0 userInfo:@{@"description":@"failed to finalize account"}];
+        }
+        responseBlock(error);
+    }];
 }
 
 - (KiiBucket *)bucketOfAppWithName:(NSString *)bucketName {
@@ -220,41 +326,6 @@ static NSString *sTemporaryToken;
         NSLog(@"Error: authenticate:%@", *error);
     }
     return user;
-}
-
-- (NSArray *)excuteQuerySynchronous:(KiiBucket *)bucket query:(KiiQuery *)query withError:(KiiError **)pError {
-    NSParameterAssert(bucket);
-    NSParameterAssert(query);
-    int count = 0;
-    KiiError *error;
-    NSMutableArray *array = [NSMutableArray arrayWithCapacity:256];
-    while (query) {
-        KiiQuery *nextQuery;
-        count++;
-        NSArray *results = [bucket executeQuerySynchronous:query withError:&error andNext:&nextQuery];
-        if (error == nil) {
-            [array addObjectsFromArray:results];
-        } else {
-            NSAssert(FALSE, @"Error: queryr:%@", error);
-            [array removeAllObjects];
-            break;
-        }
-        query = nextQuery;
-    }
-    if (pError) {
-        *pError = error;
-    }
-    [MHKiiHelper addApiCallCount:count];
-    return array;
-}
-
-- (void)excuteQuery:(KiiBucket *)bucket query:(KiiQuery *)query withBlock:(MHKiiQueryResultBlock)block {
-    NSParameterAssert(block);
-    [bucket executeQuery:query withBlock: ^(KiiQuery *query, KiiBucket *bucket, NSArray *results, KiiQuery *nextQuery, NSError *error) {
-        NSAssert(error == nil, @"Error: query:%@", error);
-        block(results, nextQuery, error == nil);
-        [MHKiiHelper addApiCallCount:1];
-    }];
 }
 
 + (NSString *)currentDeviceId {
@@ -296,16 +367,28 @@ static NSString *sTemporaryToken;
     }
 }
 
+
+// add [URL types]-[URL identifier]:bundle id, URL [Schemes]:fbxxx (xxx=YOUR_FACEBOOK_APP_ID) to info.plist
+// add below code to your AppDelegate.m and
+//
+//- (BOOL)application:(UIApplication *)application
+//            openURL:(NSURL *)url
+//  sourceApplication:(NSString *)sourceApplication
+//         annotation:(id)annotation {
+//    return [KiiSocialConnect handleOpenURL:url];
+//}
+
 - (void)registerWithFacebookAccountWithBlock:(MHKiiCompletionBlock)block {
     NSParameterAssert(block);
 
     if (_facebookHandler != nil) {
         [MHJob runInMainThread:^{
-            NSLog(@"previous facebook process is not done");
+            NSLog(@"other facebook process is running.");
             block(FALSE);
         }];
         return;
     }
+
 
     // Initialize the Social Network Connector.
     [KiiSocialConnect setupNetwork:kiiSCNFacebook
@@ -314,59 +397,32 @@ static NSString *sTemporaryToken;
                         andOptions:nil];
     [MHKiiHelper addApiCallCount:1];
     // Login with the Facebook Account.
+    [MHKiiHelper addApiCallCount:1];
     [KiiSocialConnect logIn:kiiSCNFacebook
                usingOptions:nil
                withDelegate:self
                 andCallback:@selector(didFacebookFinished:usingNetwork:withError:)];
     NSAssert(_facebookHandler == nil, @"unexpected handler");
-    id<MHKiiHelperDelegate> delegate = _delegate;
     
-    void (^registerToken)(void) = ^{
-        //success sign up  by face book account
-        NSString *ftoken = [KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
-        NSDate *fexpire = [KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
-        NSLog(@"facebook access token:%@", ftoken);;
-        NSLog(@"facebook token expires:%@",fexpire);
-        if (ftoken) {
-            NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-            [ud setObject:ftoken forKey:KiiPrefFacebookToken];
-            [ud setObject:fexpire forKey:KiiPrefFacebookExpire];
-            [ud synchronize];
-        }
-        [self registerFBAccessToken];
-    };
-    
-    _facebookHandler = ^(BOOL registered) {
-        if (registered) {
-            if ([delegate respondsToSelector:@selector(onRegisteredWithBlock:)]) {
-                [delegate onRegisteredWithBlock:^(BOOL inited) {
-                    if (inited) {
-                        registerToken();
-                    } else {
-                        [KiiSocialConnect unLinkCurrentUserWithNetwork:kiiSCNFacebook
-                                                          withDelegate:nil
-                                                           andCallback:nil];
-                        [MHKiiHelper _deleteAccountWithBlock:nil];
-                    }
-                    if (block) {
-                        block(inited);
-                    }
-                }];
-                return;
-            } else {
-                registerToken();
+    _facebookHandler = ^(BOOL success) {
+        if (!success) {
+            if (block) {
+                block(success);
             }
+            return;
         }
-        if (block) {
-            block(registered);
-        }
+        [[MHKiiHelper sharedInstance] setupAccount:^(BOOL success) {
+            if (block) {
+                block(success);
+            }
+        }];
     };
 }
 
 - (void)linkWithFacebookAccountWithBlock:(MHKiiCompletionBlock)block {
     if (_facebookHandler != nil) {
         [MHJob runInMainThread:^{
-            NSLog(@"previous facebook process is not done");
+            NSLog(@"other facebook process is running.");
             if (block) {
                 block(FALSE);
             }
@@ -380,10 +436,9 @@ static NSString *sTemporaryToken;
                          andSecret:nil
                         andOptions:nil];
     // Link to the Facebook Account.
-    [MHKiiHelper addApiCallCount:1];
     //NSDictionary *permissions = @{@"publish_actions" : @YES,                                  @"email" : @YES};
     //NSDictionary *params = @{@"permissions": permissions};
-    
+    [MHKiiHelper addApiCallCount:1];
     [KiiSocialConnect linkCurrentUserWithNetwork:kiiSCNFacebook
                                     usingOptions:nil
                                     withDelegate:self
@@ -391,8 +446,9 @@ static NSString *sTemporaryToken;
     NSAssert(_facebookHandler == nil, @"unexpected handler");
     _facebookHandler = ^(BOOL success) {
         if (success) {//success link face book account
-            NSString *ftoken = [KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
-            NSDate *fexpire = [KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
+            NSDictionary *dict = [KiiSocialConnect getAccessTokenDictionaryForNetwork:kiiSCNFacebook];
+            NSString *ftoken = [dict objectForKey:@"access_token"];//[KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
+            NSDate *fexpire = [dict objectForKey:@"access_token_expires"];//[KiiSocialConnect getAccessTokenExpiresForNetwork:kiiSCNFacebook];
             NSLog(@"facebook:token:%@, date:%@", ftoken, fexpire);
             if (ftoken) {
                 NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
@@ -411,7 +467,7 @@ static NSString *sTemporaryToken;
     
     if (_facebookHandler != nil) {
         [MHJob runInMainThread:^{
-            NSLog(@"previous facebook process is not done");
+            NSLog(@"other facebook process is running.");
             if (block) {
                 block(FALSE);
             }
@@ -481,7 +537,7 @@ static NSString *sTemporaryToken;
                                   } else {
                                       NSLog(@"Result: %@", result);
                                       // "data" セクションに全フレンド情報が入っている
-                                      NSDictionary *arrFriends = [result objectForKey:@"data"];
+                                      //NSDictionary *arrFriends = [result objectForKey:@"data"];
                                   }
                               }];
         
@@ -602,7 +658,7 @@ static NSString *sTemporaryToken;
         KiiError *error;
         KiiBucket *bucket = [user bucketWithName:name];
         KiiQuery *query = [[KiiQuery alloc] init];
-        NSArray *results = [[MHKiiHelper sharedInstance] excuteQuerySynchronous:bucket query:query withError:&error];
+        NSArray *results = [bucket _excuteQuerySynchronous:query withError:&error];
         if (error) {
             NSLog(@"error query:%@", query);
         }
@@ -612,6 +668,8 @@ static NSString *sTemporaryToken;
     }
 #endif
 }
+
+
 
 @end
 

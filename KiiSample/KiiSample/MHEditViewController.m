@@ -16,7 +16,7 @@
 
 #import "KiiManager.h"
 
-@interface MHEditViewController () <UIPickerViewDelegate, UIPickerViewDataSource, UIActionSheetDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface MHEditViewController () <UIPickerViewDelegate, UIPickerViewDataSource, UIActionSheetDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, KiiManagerDelegate>
 
 @end
 
@@ -118,18 +118,7 @@ static int tagImage = 400;
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [[KiiManager sharedInstance] addObserver:self forKeyPath:@"object" options:NSKeyValueObservingOptionNew context:nil];
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-    [[KiiManager sharedInstance] removeObserver:self forKeyPath:@"object"];
-    [super viewDidDisappear:animated];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"object"]) {
-        [self updateValues];
-    }
+    [KiiManager sharedInstance].delegate = self;
 }
 
 - (void)tap:(UITapGestureRecognizer *)recog {
@@ -201,9 +190,7 @@ static int tagImage = 400;
     UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(100, posY, 160, 160)];
     imageView.tag = tagImage;
     [self.view addSubview:imageView];
-    [[KiiManager sharedInstance] downloadData:^(NSData *data) {
-        imageView.image = [UIImage imageWithData:data];
-    }];
+    imageView.image = [UIImage imageWithData:[object _bodyCache]];
 
     posY += 160;
 
@@ -331,5 +318,8 @@ static int tagImage = 400;
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-
+#pragma mark - KiiManagerDelegate
+- (void)kiiManager:(KiiManager *)manager didChangeObject:(KiiObject *)object {
+    [self updateValues];
+}
 @end

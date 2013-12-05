@@ -8,6 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+@class KiiManager;
+
+@protocol KiiManagerDelegate <NSObject>
+- (void)kiiManager:(KiiManager *)manager didChangeObject:(KiiObject *)object;
+@end
+
 @interface KiiManager : NSObject
 + (KiiManager *)sharedInstance;
 
@@ -18,7 +24,7 @@
 - (void)saveAll:(NSDictionary *)values widthDeleteKeys:(NSArray *)deleteKeys;
 - (void)deleteBody;
 - (void)uploadData:(NSData *)data;
-- (void)downloadData:(void (^)(NSData *data))block;
+- (void)downloadData;
 
 @property (nonatomic ,assign)BOOL userMode;
 @property (nonatomic, strong) NSString *bucketName;
@@ -26,5 +32,6 @@
 
 @property (nonatomic, strong) NSString *uuid;
 @property (nonatomic, strong) KiiObject *object;
+@property (nonatomic, weak) id<KiiManagerDelegate> delegate;
 @end
 

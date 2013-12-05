@@ -17,7 +17,7 @@
 #import "KiiManager.h"
 
 
-@interface MHViewController () <UIGestureRecognizerDelegate>
+@interface MHViewController () <UIGestureRecognizerDelegate, KiiManagerDelegate>
 
 @property (nonatomic ,strong) UIView *containerView;
 @property (nonatomic, strong) NSString *bucketName;
@@ -106,14 +106,9 @@
     
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"object"]) {
-        [self query];
-    }
-}
-
 -(void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+    [KiiManager sharedInstance].delegate = self;
     
     [[MHKiiHelper sharedInstance] loginWithBlock:^(BOOL success, BOOL firstTime) {
         if (success) {
@@ -125,12 +120,6 @@
             [self presentViewController:vc animated:YES completion:nil];
         }
     }];
-    [[KiiManager sharedInstance] addObserver:self forKeyPath:@"object" options:NSKeyValueObservingOptionNew context:nil];
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-    [[KiiManager sharedInstance] removeObserver:self forKeyPath:@"object"];
-    [super viewDidDisappear:animated];
 }
 
 - (void)userMode:(UISwitch *)sender {
@@ -169,4 +158,8 @@
     [self presentViewController:vc animated:YES completion:nil];
 }
 
+#pragma mark - KiiManagerDelegate
+- (void)kiiManager:(KiiManager *)manager didChangeObject:(KiiObject *)object {
+    [self query];
+}
 @end

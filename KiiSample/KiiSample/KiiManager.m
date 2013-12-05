@@ -104,10 +104,8 @@
     }
 }
 
-- (void)hideLoaderWithError:(NSError *)error {
-    [KTLoader showLoader:[NSString stringWithFormat:@"Error: %@", error]
-                animated:YES withIndicator:KTLoaderIndicatorError andHideInterval:KTLoaderDurationAuto];
-    NSLog(@"error:%@", error);
+- (BOOL)kiiInitializeAccount {
+    return YES;
 }
 
 - (void)newObject {
@@ -118,6 +116,7 @@
             self.uuid =  object.uuid;
             NSLog(@"uri:%@", [object objectURI]);
             self.object = object;
+            [self.delegate kiiManager:self didChangeObject:object];
         }
     }];
 }
@@ -139,6 +138,7 @@
     
     [object _deleteWithBlock:^(BOOL success) {
         self.object = nil;
+        [self.delegate kiiManager:self didChangeObject:nil];
     }];
 }
 
@@ -158,64 +158,40 @@
     
     [object _refreshWithBlock:^(BOOL success) {
         self.object = object;
+        [self.delegate kiiManager:self didChangeObject:object];
     }];
 }
 
 - (void)save:(NSDictionary *)values {
 
-    KiiObject *object = [KiiObject objectWithURI:self.object.objectURI];
-    for (NSString *key in [values keyEnumerator]) {
-        if ([[values objectForKey:key] isEqual:[self.object getObjectForKey:key]]) {
-            continue;
-        } else {
-            [object setObject:[values objectForKey:key] forKey:key];
-        }
-    }
-    [object _saveWithBlock:^(BOOL success) {
-        [self refreshObject:object.uuid];
+    [self.object _set:values widthDeleteKeys:nil];
+    [self.object _saveWithBlock:^(BOOL success) {
+        [self.delegate kiiManager:self didChangeObject:self.object];
     }];
 }
 
 - (void)saveAll:(NSDictionary *)values widthDeleteKeys:(NSArray *)deleteKeys {
-    KiiObject *object = [KiiObject objectWithURI:self.object.objectURI];
-    
-    [object _refreshWithBlock:^(BOOL success) {
-        if (success) {
-            for (NSString *key in [values keyEnumerator]) {
-                [object setObject:[values objectForKey:key] forKey:key];
-            }
-            for (NSString *key in deleteKeys) {
-                [object removeObjectForKey:key];
-            }
-            
-            [object _saveAllFieldsWithBlock:^(BOOL success) {
-                [self refreshObject:object.uuid];
-            }];
-        } else {
-            self.object = object;
-        }
+    [self.object _set:values widthDeleteKeys:deleteKeys];
+    [self.object _saveAllFieldsWithBlock:^(BOOL success) {
+        [self.delegate kiiManager:self didChangeObject:self.object];
     }];
 }
 
 - (void)uploadData:(NSData *)data {
     [self.object _uploadBody:data withBlock:^(BOOL success) {
-        if (success) {
-            [self refreshObject:self.object.uuid];
-        }
+        [self.delegate kiiManager:self didChangeObject:self.object];
     }];
 }
 
-- (void)downloadData:(void (^)(NSData *))block {
+- (void)downloadData {
     [self.object _downloadBody:YES withBlock:^(BOOL success, NSData *data) {
-        if (block) {
-            block(data);
-        }
+        [self.delegate kiiManager:self didChangeObject:self.object];
     }];
 }
 
 - (void)deleteBody {
     [self.object _deleteBody:^(BOOL success) {
-        [self refreshObject:self.object.uuid];
+        [self.delegate kiiManager:self didChangeObject:self.object];
     }];
 }
 @end

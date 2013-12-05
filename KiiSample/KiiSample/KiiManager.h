@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MHKiiHelper.h"
 
 @class KiiManager;
 
@@ -14,7 +15,7 @@
 - (void)kiiManager:(KiiManager *)manager didChangeObject:(KiiObject *)object;
 @end
 
-@interface KiiManager : NSObject
+@interface KiiManager : NSObject <MHKiiHelperDelegate>
 + (KiiManager *)sharedInstance;
 
 - (void)newObject;

@@ -7,6 +7,7 @@
 //
 
 #import "KiiObject+MHKiiHelper.h"
+#import "MHFoundation.h"
 
 typedef void (^MHKiiCompletionBlock)(BOOL success);
 
@@ -21,6 +22,13 @@ typedef enum {
     MHKiiLoadingDownload,
 } MHKiiLoading;
 
+typedef enum {
+    MHKiiLoginResultNoAccount = 0,
+    MHKiiLoginResultSetupError,
+    MHKiiLoginResultFirstLogin,
+    MHKiiLoginResultSuccess,
+} MHKiiLoginResult;
+
 @protocol MHKiiHelperDelegate <NSObject>
 @optional
 - (void)kiiStartLoadingFor:(MHKiiLoading)name count:(int)loadingCount;
@@ -31,12 +39,17 @@ typedef enum {
 
 @interface MHKiiHelper : NSObject
 
++ (void)beginWithID:(NSString *)appID
+             andKey:(NSString *)appKey
+            andSite:(KiiSite)site
+      andFacebookID:(NSString *)fbId;
+
 + (MHKiiHelper *)sharedInstance;
 
 - (void)startLoadingFor:(MHKiiLoading)name;
 - (void)endLoadingFor:(MHKiiLoading)name error:(NSError *)error;
 
-- (void)loginWithBlock:(void (^)(BOOL, BOOL))block;
+- (void)loginWithBlock:(void (^)(MHKiiLoginResult result))block;
 - (void)logout;
 - (void)deleteAccountWithBlock:(MHKiiCompletionBlock)block;
 - (void)pushInstall:(NSData *)deviceToken;
@@ -54,6 +67,7 @@ typedef enum {
 
 
 + (NSString *)currentDeviceId;
++ (double)getCurrentDate;
 
 + (int)apiCallCount;
 + (void)addApiCallCount:(int)i;

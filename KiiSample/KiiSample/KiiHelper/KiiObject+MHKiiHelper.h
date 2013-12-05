@@ -24,6 +24,7 @@
 - (BOOL)setIntValue:(int)value forKey:(NSString *)key;
 - (BOOL)setDoubleValue:(double)value forKey:(NSString *)key;
 - (BOOL)setStringValue:(NSString *)value forKey:(NSString *)key;
+- (BOOL)setBoolValue:(BOOL)value forKey:(NSString *)key;
 
 - (void)_saveAllFieldsWithBlock:(void (^)(BOOL success))block;
 - (void)_saveWithBlock:(void (^)(BOOL success))block;
@@ -44,6 +45,7 @@
 + (NSArray *)valueTypeNames;
 - (NSString *)typeNameForKey:(NSString *)key;
 
+- (void)dump:(NSString *)name;
 @end
 
 

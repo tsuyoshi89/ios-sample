@@ -100,6 +100,7 @@
 		48915ED8184C9F7800212EC7 /* MHImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 48915ED7184C9F7800212EC7 /* MHImage.m */; };
 		48915EDB184C9FE300212EC7 /* MHFileHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48915EDA184C9FE300212EC7 /* MHFileHelper.mm */; };
 		48915F861850324500212EC7 /* KiiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 48915F851850324500212EC7 /* KiiManager.m */; };
+		48915F8F1850CA6A00212EC7 /* MHFoundation.mm in Sources */ = {isa = PBXBuildFile; fileRef = 48915F8E1850CA6A00212EC7 /* MHFoundation.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -245,6 +246,8 @@
 		48915EDA184C9FE300212EC7 /* MHFileHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHFileHelper.mm; sourceTree = "<group>"; };
 		48915F841850324500212EC7 /* KiiManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KiiManager.h; sourceTree = "<group>"; };
 		48915F851850324500212EC7 /* KiiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KiiManager.m; sourceTree = "<group>"; };
+		48915F8D1850CA6A00212EC7 /* MHFoundation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MHFoundation.h; sourceTree = "<group>"; };
+		48915F8E1850CA6A00212EC7 /* MHFoundation.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MHFoundation.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -368,6 +371,8 @@
 		4855847E1845EC710018F9CF /* MHLib */ = {
 			isa = PBXGroup;
 			children = (
+				48915F8D1850CA6A00212EC7 /* MHFoundation.h */,
+				48915F8E1850CA6A00212EC7 /* MHFoundation.mm */,
 				48915ED6184C9F7800212EC7 /* MHImage.h */,
 				48915ED7184C9F7800212EC7 /* MHImage.m */,
 				48915ED9184C9FE300212EC7 /* MHFileHelper.h */,
@@ -856,6 +861,7 @@
 				48558527184604520018F9CF /* KTLoginViewController.m in Sources */,
 				4855852C184604520018F9CF /* KTAlertBar.m in Sources */,
 				48915ED8184C9F7800212EC7 /* MHImage.m in Sources */,
+				48915F8F1850CA6A00212EC7 /* MHFoundation.mm in Sources */,
 				48558542184604750018F9CF /* MHViewController.mm in Sources */,
 				48558529184604520018F9CF /* CKRefreshArrowView.m in Sources */,
 				485586F0184AF1F10018F9CF /* MHEditViewController.m in Sources */,

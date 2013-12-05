@@ -10,7 +10,13 @@
 #import "MHJob.h"
 #import "MHKiiHelper.h"
 #import "MHFileHelper.h"
+#import "MHFoundation.h"
 #import "KiiObject+MHKiiHelper.h"
+
+#ifdef MHAssert
+#undef NSAssert
+#define NSAssert MHAssert
+#endif
 
 #define MHLib_OBJC_CAST(type, obj) ([(obj) isKindOfClass:[type class]] ? ((type *)(obj)) : nil)
 #define MHClassName(obj) NSStringFromClass([(obj) class])
@@ -100,6 +106,12 @@ static NSString *KeyBody = @"mh_body";
 - (BOOL)setStringValue:(NSString *)value forKey:(NSString *)key {
     NSAssert(value != nil, @"%@ must not be null!", key);
     BOOL ok = [self setObject:value forKey:key];
+    NSAssert(ok, @"Failed to set object:key:%@", key);
+    return ok;
+}
+
+- (BOOL)setBoolValue:(BOOL)value forKey:(NSString *)key {
+    BOOL ok = [self setObject:[NSNumber numberWithBool:value] forKey:key];
     NSAssert(ok, @"Failed to set object:key:%@", key);
     return ok;
 }
@@ -225,7 +237,10 @@ static NSString *KeyBody = @"mh_body";
 - (void)_uploadBody:(NSData *)data withBlock:(void (^)(BOOL))block {
     KiiObject *object = [KiiObject objectWithURI:self.objectURI];
     NSString *path = [self filePath];
-    if (![MHFileHelper writeDataAtPath:path contents:data append:NO]) {
+    if ([MHFileHelper isFileAtPath:path]) {
+        [MHFileHelper removeItemAtPath:path];
+    }
+    if (![MHFileHelper createFileAtPath:path contents:data attributes:nil]) {
         [MHJob runInMainThread:^{
             if (block) {
                 block(FALSE);
@@ -397,6 +412,10 @@ static NSString *KeyBody = @"mh_body";
         }
     }
     return NSStringFromClass([value class]);
+}
+
+- (void)dump:(NSString *)name {
+    [[self dictionaryValue] dump:name];
 }
 
 

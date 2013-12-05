@@ -9,9 +9,6 @@
 #ifndef KiiSample_common_h
 #define KiiSample_common_h
 
-//#define YOUR_KII_APP_ID
-//#define YOUR_KII_APP_KEY
-
 @interface UIViewController (KiiSample)
 - (NSArray *)createField:(CGFloat)y label:(NSString *)labelText placeFolder:(NSString *)placeFolder;
 @end

@@ -6,14 +6,17 @@
 //  Copyright (c) 2013年 Kii. All rights reserved.
 //
 
-#include <FacebookSDK/FacebookSDK.h>
-
 #include "MHKiiHelper.h"
 #include "MHJob.h"
 #include "KiiObject+MHKiiHelper.h"
 
+#if defined(MHAssert)
+#undef NSAssert
+#define NSAssert MHAssert
+#endif
+
 static NSString *KiiHelperBucketName = @"mh_helper";
-static NSString *KiiPrefVersion = @"mh_version";
+static NSString *KiiPrefVersion = @"mh_ver";
 static NSString *KiiPrefAccessToken = @"mh_token";
 static NSString *KiiPrefFacebookToken = @"fb_token";
 static NSString *KiiPrefFacebookExpire = @"fb_expire";
@@ -21,6 +24,8 @@ static NSString *KiiPrefKeyApiCallCount = @"mh_count";
 
 @interface MHKiiHelper ()
 + (KiiUser *)authenticateWithTokenSynchronous:(NSString *)accessToken andError:(KiiError **)error;
+
+@property (nonatomic, strong) NSString *facebookID;
 @end
 
 @implementation MHKiiHelper {
@@ -28,11 +33,14 @@ static NSString *KiiPrefKeyApiCallCount = @"mh_count";
     int _loadingCount;
 }
 
+static MHKiiHelper *instance;
++ (void)beginWithID:(NSString *)appID andKey:(NSString *)appKey andSite:(KiiSite)site andFacebookID:(NSString *)fbId {
+    [Kii beginWithID:appID andKey:appKey andSite:site];
+    instance = [[MHKiiHelper alloc] init];
+    instance.facebookID = fbId;
+}
+
 + (MHKiiHelper *)sharedInstance{
-    static MHKiiHelper *instance;
-    if (!instance) {
-        instance = [[MHKiiHelper alloc] init];
-    }
     return instance;
 }
 
@@ -106,46 +114,54 @@ static NSString *KiiPrefKeyApiCallCount = @"mh_count";
     _loadingCount--;
 }
 
-- (void)setupAccount:(void (^)(BOOL))block {
+- (void)setupAccount:(void (^)(MHKiiLoginResult))block {
+    const int latestVersion = 1;
+    
     [MHJob runInWorkerThread:^{
         KiiUser *user = [KiiUser currentUser];
         NSAssert(user, @"user must be loggined!");
         NSString *token = [user accessToken];
         NSAssert(token, @"unexpected null token");
-        
+        KiiError *error;
         NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
         NSString *oldToken = [ud objectForKey:KiiPrefAccessToken];
-        NSString *version;
+        int version = 0;
         if ([token isEqualToString:oldToken]) {
-            version = [ud objectForKey:KiiPrefVersion];
+            version = [[ud objectForKey:KiiPrefVersion] intValue];
         }
         
-        BOOL initialized = (version && [version intValue] > 0);
+        BOOL initialized = (version > 0);
         
         if (!initialized) {
             KiiBucket *bucket = [user bucketWithName:KiiHelperBucketName];
             KiiQuery *query = [KiiQuery queryWithClause:nil];
             query.limit = 1;
-            KiiError *error;
             NSArray *array = [bucket _excuteQuerySynchronous:query withError:&error];
             if (array.count > 0) {
                 KiiObject *object = [array lastObject];
-                version = [object getStringForKey:KiiPrefVersion];
+                version = [object getIntForkey:KiiPrefVersion];
             }
-            initialized = (version && [version intValue] > 0);
+            initialized = (version > 0);
             
             
             if (!initialized) {
                 initialized = TRUE;
-                if ([_delegate respondsToSelector:@selector(kiiInitializeAccount)]) {
-                    initialized = [_delegate kiiInitializeAccount];
+                
+                
+                initialized = [self createTopicNamed:@"mh_notify"];
+                    
+                if (initialized) {
+                    if ([_delegate respondsToSelector:@selector(kiiInitializeAccount)]) {
+                        initialized = [_delegate kiiInitializeAccount];
+                        if (!initialized) {
+                            error = [NSError errorWithDomain:@"mh" code:0 userInfo:@{@"desc":@"failed to initialize account"}];
+                        }
+                    }
                 }
                 
                 if (initialized) {
-                    NSString *latestVersion = @"1";
                     KiiObject *object = [bucket createObject];
-                    [object setStringValue:latestVersion forKey:KiiPrefVersion];
-                    KiiError *error;
+                    [object setIntValue:latestVersion forKey:KiiPrefVersion];
                     [object _saveSynchronous:&error];
                     initialized = (error == nil);
                     if (initialized) {
@@ -156,7 +172,7 @@ static NSString *KiiPrefKeyApiCallCount = @"mh_count";
             
             if (initialized) {
                 [ud setObject:token forKey:KiiPrefAccessToken];
-                [ud setObject:version forKey:KiiPrefVersion];
+                [ud setInteger:version forKey:KiiPrefVersion];
                 
                 NSDictionary *dict = [KiiSocialConnect getAccessTokenDictionaryForNetwork:kiiSCNFacebook];
                 NSString *ftoken = [dict objectForKey:@"access_token"];//[KiiSocialConnect getAccessTokenForNetwork:kiiSCNFacebook];
@@ -171,48 +187,172 @@ static NSString *KiiPrefKeyApiCallCount = @"mh_count";
                 [ud synchronize];
             }
         }
-        
+
         [MHJob runInMainThread:^{
-            if (block) {
-                block(initialized);
-            }
+            block(initialized ? MHKiiLoginResultSuccess : MHKiiLoginResultSetupError);
         }];
     }];
 }
 
+- (BOOL)createTopicNamed:(NSString *)topicName {
+    KiiUser *user = [KiiUser currentUser];
+    KiiError *error;
+    KiiTopic *topic = [user topicWithName:topicName];
+    [topic saveSynchronous:&error];
+    if ([error isEqual:[KiiError topicAlreadyExist]]) {
+        NSLog(@"[ignore] topic is already created!");
+        //!!!ignore error
+        error = nil;
+    } else if (error) {
+        NSLog(@"Error save topic:%@", error);
+        return FALSE;
+    }
+
+    //acl for topic message send
+    KiiACL *acl = topic.topicACL;
+    KiiACLEntry *entry = [KiiACLEntry entryWithSubject:[KiiAnyAuthenticatedUser aclSubject] andAction:KiiACLTopicActionSend];
+#if 0
+    NSArray *entries = [acl listACLEntriesSynchronous:&error];
+    for (KiiACLEntry *e in entries) {
+        NSLog(@"acl subject:%@ grant:%d", e.subject, e.grant);
+    }
+#endif
+    [acl putACLEntry:entry];
+    NSArray *succeeds, *fails;
+    [acl saveSynchronous:&error didSucceed:&succeeds didFail:&fails];
+    if (error == nil) {
+        NSLog(@"success save acl");
+    } else {
+        NSLog(@"[ignore] failed to save acl:%@ succeeds:%@, fails:%@", error, succeeds, fails);
+        //!!!ignore error because acl is remembered after topic is deleted
+        error = nil;
+    }
+    
+    if (error == nil) {
+        [KiiPushSubscription subscribeSynchronous:topic withError:&error];
+        if (error == nil) {
+            NSLog(@"success subscribe!");
+        } else if ([error isEqual:[KiiError subscriptionAlreadyExist]]) {
+            NSLog(@"[ignore] subscription already exist");
+            //!!!ignore error
+            error = nil;
+        } else if ([MHKiiHelper serverCodeIs:@"PUSH_SUBSCRIPTION_ALREADY_EXISTS" inError:error]) {
+            NSLog(@"[ignore] push subscription already exist:%d", error.code);
+            //!!!ignore error
+            error = nil;
+        } else {
+            NSLog(@"failed to subscribe:%@", error.description);
+        }
+    }
+    
+    BOOL ok = (error == nil);
+    if (!ok) {
+        [self deleteTopicNamed:topicName];
+    }
+    return ok;
+}
+
+- (BOOL)deleteTopicNamed:(NSString *)topicName {
+    KiiUser *user = [KiiUser currentUser];
+    KiiError *error;
+    
+    KiiTopic *topic = [user topicWithName:topicName];
+
+#if 0//subscription will be deleted with topic
+    [KiiPushSubscription unsubscribeSynchronous:topic withError:&error];
+    if (error == nil) {
+        NSLog(@"unsubscribe topic");
+    } else if ([error isEqual:[KiiError subscriptionNotExist]]) {
+        NSLog(@"subscription not exist");
+    } else {
+        NSLog(@"Error:unsubscribe:%@", error);
+    }
+#endif
+    
+#if 0//acl cant remove
+    KiiACL *acl = topic.topicACL;
+    NSArray *aclList = [acl listACLEntriesSynchronous:&error];
+    for (KiiACLEntry *entry in aclList) {
+        NSLog(@"remove entry:%@", entry);
+        [acl removeACLEntry:entry];
+    }
+    NSArray *succeeds, *fails;
+    [acl saveSynchronous:&error didSucceed:&succeeds didFail:&fails];
+    if (error == nil) {
+        NSLog(@"success remove acl:succeeds:%@ fails:%@", succeeds, fails);
+    } else {
+        NSLog(@"failed to remove acl:%@ succeeds:%@, fails:%@", error, succeeds, fails);
+    }
+#endif
+
+    [topic deleteSynchronous:&error];
+    if ([error isEqual:[KiiError topicNotExist]]) {
+        NSLog(@"[ignore] topic not exist");
+        error = nil;
+    } else if (error) {
+        NSLog(@"Error delete topic:%@", error);
+    }
+    
+
+    BOOL ok = (error == nil);
+    return ok;
+}
+
+
 static NSString *sTemporaryToken;
 
-- (void)loginWithBlock:(void (^)(BOOL, BOOL))block {
-    static MHKiiLoading sName = MHKiiLoadingLogin;
-    [self startLoadingFor:sName];
+- (void)loginWithBlock:(void (^)(MHKiiLoginResult))block {
+    NSParameterAssert(block);
     
-    void (^setupBlock)(BOOL) = ^(BOOL success) {
-        BOOL firstTime = FALSE;
-        if (success) {
-            NSString *token = [[KiiUser currentUser] accessToken];
-            firstTime = ![sTemporaryToken isEqualToString:token];
-            if (firstTime) {
-                //first login for current user
-                sTemporaryToken = token;
-                [self enablePushNotification];
-            }
-        } else {
-            sTemporaryToken = nil;
-        }
-        if (block) {
-            block(success, firstTime);
-        }
-        NSError *error = success ? nil : [NSError errorWithDomain:@"mh" code:0 userInfo:@{@"description":@"failed to setup account"}];
+    static MHKiiLoading sName = MHKiiLoadingLogin;
+    
+    void (^setupBlock)(MHKiiLoginResult) = ^(MHKiiLoginResult result) {
+        NSError *error;
+        switch (result) {
+            case MHKiiLoginResultSetupError:
+                error = [KiiError errorWithCode:@"login" andMessage:@"初期化エラー"];
+                break;
+            default:
+                if ([KiiUser loggedIn]){
+                    BOOL firstTime = FALSE;
+                    NSString *token = [[KiiUser currentUser] accessToken];
+                    firstTime = ![sTemporaryToken isEqualToString:token];
+                    if (firstTime) {
+                        //first login for current user
+                        sTemporaryToken = token;
+                        [self enablePushNotification];
+                        result = MHKiiLoginResultFirstLogin;
+                    } else {
+                        result = MHKiiLoginResultSuccess;
+                    }
+                } else {
+                    sTemporaryToken = nil;
+                    result = MHKiiLoginResultNoAccount;
+                }
+                break;
+        };
         [self endLoadingFor:sName error:error];
+        block(result);
     };
 
     // if the user is not logged in, check saved access token;
-    if (![KiiUser loggedIn]) {
+    if ([KiiUser loggedIn]) {
+        NSString *token = [[KiiUser currentUser] accessToken];
+        if ([sTemporaryToken isEqualToString:token]) {
+            [MHJob runInMainThread:^{
+                block(MHKiiLoginResultSuccess);
+            }];
+        } else {
+            [self startLoadingFor:sName];
+            [self setupAccount:setupBlock];
+        }
+    } else {
         sTemporaryToken = nil;
         //load token
         NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
         NSString *accessToken = [ud stringForKey:KiiPrefAccessToken];
         if (accessToken) {
+            [self startLoadingFor:sName];
             [MHJob runInWorkerThread:^{
                 KiiError *error;
                 [MHKiiHelper authenticateWithTokenSynchronous:accessToken andError:&error];
@@ -221,21 +361,15 @@ static NSString *sTemporaryToken;
                     [self setupAccount:setupBlock];
                 } else {
                     [MHJob runInMainThread:^{
-                        setupBlock(FALSE);
+                        setupBlock(MHKiiLoginResultNoAccount);
                     }];
                 }
             }];
-            return;
+        } else {
+            [MHJob runInMainThread:^{
+                block(MHKiiLoginResultNoAccount);
+            }];
         }
-    }
-    
-    BOOL success = [KiiUser loggedIn];
-    if (success) {
-        [self setupAccount:setupBlock];
-    } else {
-        [MHJob runInMainThread:^{
-            setupBlock(FALSE);
-        }];
     }
 }
 
@@ -266,10 +400,13 @@ static NSString *sTemporaryToken;
     void (^responseBlock)(NSError *) = ^(NSError *error) {
         [MHJob runInMainThread:^{
             BOOL success = (error == nil);
+            if (success) {
+                [[MHKiiHelper sharedInstance] clearAuthInfo];
+            }
+            [[MHKiiHelper sharedInstance] endLoadingFor:sName error:error];
             if (block) {
                 block(success);
             }
-            [[MHKiiHelper sharedInstance] endLoadingFor:sName error:error];
         }];
     };
 
@@ -333,6 +470,11 @@ static NSString *sTemporaryToken;
     return [[UIDevice currentDevice].identifierForVendor UUIDString];
 }
 
++ (double)getCurrentDate {
+    return [[NSDate date] timeIntervalSince1970];
+}
+
+
 + (int)apiCallCount {
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
     int count = [ud integerForKey:KiiPrefKeyApiCallCount];
@@ -346,7 +488,6 @@ static NSString *sTemporaryToken;
     [ud synchronize];
 }
 
-#ifdef YOUR_FACEBOOK_APP_ID
 - (void)didFacebookFinished:(KiiUser *)user
                usingNetwork:(KiiSocialNetworkName)network
                   withError:(NSError *)error {
@@ -389,11 +530,13 @@ static NSString *sTemporaryToken;
         }];
         return;
     }
+    
+    [[MHKiiHelper sharedInstance] startLoadingFor:MHKiiLoadingLogin];
 
 
     // Initialize the Social Network Connector.
     [KiiSocialConnect setupNetwork:kiiSCNFacebook
-                           withKey:YOUR_FACEBOOK_APP_ID
+                           withKey:self.facebookID
                          andSecret:nil
                         andOptions:nil];
     [MHKiiHelper addApiCallCount:1];
@@ -407,15 +550,16 @@ static NSString *sTemporaryToken;
     
     _facebookHandler = ^(BOOL success) {
         if (!success) {
+            [[MHKiiHelper sharedInstance] endLoadingFor:MHKiiLoadingLogin error:[KiiError errorWithCode:@"mh" andMessage:@"facebook login failed."]];
             if (block) {
                 block(success);
             }
             return;
         }
-        [[MHKiiHelper sharedInstance] setupAccount:^(BOOL success) {
-            if (block) {
-                block(success);
-            }
+        [[MHKiiHelper sharedInstance] setupAccount:^(MHKiiLoginResult result) {
+            NSError *error = (result == MHKiiLoginResultSuccess) ? nil : [KiiError errorWithCode:@"" andMessage:@"facebook account setup error"];
+            [[MHKiiHelper sharedInstance] endLoadingFor:MHKiiLoadingLogin error:error];
+            block(success);
         }];
     };
 }
@@ -433,7 +577,7 @@ static NSString *sTemporaryToken;
 
     // Initialize the Social Network Connector.
     [KiiSocialConnect setupNetwork:kiiSCNFacebook
-                           withKey:YOUR_FACEBOOK_APP_ID
+                           withKey:self.facebookID
                          andSecret:nil
                         andOptions:nil];
     // Link to the Facebook Account.
@@ -478,7 +622,7 @@ static NSString *sTemporaryToken;
     
     // Initialize the Social Network Connector.
     [KiiSocialConnect setupNetwork:kiiSCNFacebook
-                           withKey:YOUR_FACEBOOK_APP_ID
+                           withKey:self.facebookID
                          andSecret:nil
                         andOptions:nil];
     // Link to the Facebook Account.
@@ -514,6 +658,7 @@ static NSString *sTemporaryToken;
     return [code isEqualToString:server_code];
 }
 
+#if 0 //FACEBOOK SDK
 - (void)registerFBAccessToken {
     
     FBSession *session = [[FBSession alloc] init];
@@ -647,7 +792,7 @@ static NSString *sTemporaryToken;
 #endif
 }
 
-#endif /* YOUR_FACEBOOK_ID */
+#endif /* FACEBOOK_SDK */
 
 #pragma mark - debug methods
 

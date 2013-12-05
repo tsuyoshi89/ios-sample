@@ -46,6 +46,8 @@
 
     self.navigationItem.title = @"Kii Cloud 管理ツール";
 
+    UIBarButtonItem *left = [[UIBarButtonItem alloc]initWithTitle:@"Delete" style:UIBarButtonItemStylePlain target:self action:@selector(deleteAccount)];
+    [self.navigationItem setLeftBarButtonItem:left];
     UIBarButtonItem *right = [[UIBarButtonItem alloc]initWithTitle:@"Logout" style:UIBarButtonItemStylePlain target:self action:@selector(logout)];
     [self.navigationItem setRightBarButtonItem:right];
     
@@ -110,14 +112,25 @@
     [super viewDidAppear:animated];
     [KiiManager sharedInstance].delegate = self;
     
-    [[MHKiiHelper sharedInstance] loginWithBlock:^(BOOL success, BOOL firstTime) {
-        if (success) {
-            if (firstTime) {
+    [[MHKiiHelper sharedInstance] loginWithBlock:^(MHKiiLoginResult result) {
+        switch (result) {
+            case MHKiiLoginResultFirstLogin:
                 [self query];
+            case MHKiiLoginResultSuccess:
+                break;
+            case MHKiiLoginResultSetupError:
+            {
+                UIViewController *vc = [[KTLoginViewController alloc] init];
+                [self presentViewController:vc animated:YES completion:nil];
+
             }
-        } else {
-            UIViewController *vc = [[KTLoginViewController alloc] init];
-            [self presentViewController:vc animated:YES completion:nil];
+                break;
+            case MHKiiLoginResultNoAccount:
+            {
+                UIViewController *vc = [[KTLoginViewController alloc] init];
+                [self presentViewController:vc animated:YES completion:nil];
+            }
+                break;
         }
     }];
 }
@@ -156,6 +169,13 @@
     [[MHKiiHelper sharedInstance] logout];
     UIViewController *vc = [[KTLoginViewController alloc] init];
     [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (void)deleteAccount {
+    [[MHKiiHelper sharedInstance] deleteAccountWithBlock:^(BOOL success) {
+        UIViewController *vc = [[KTLoginViewController alloc] init];
+        [self presentViewController:vc animated:YES completion:nil];
+    }];
 }
 
 #pragma mark - KiiManagerDelegate

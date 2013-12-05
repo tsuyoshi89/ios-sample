@@ -11,7 +11,7 @@
 #import "KiiManager.h"
 
 
-@interface KiiManager () <MHKiiHelperDelegate>
+@interface KiiManager ()
 
 @end
 
@@ -24,8 +24,7 @@
     static KiiManager *instance;
     if (instance == nil) {
         instance = [[KiiManager alloc] init];
-        [MHKiiHelper sharedInstance].delegate = instance;
-    }
+     }
     return instance;
 }
 
@@ -105,9 +104,16 @@
 }
 
 - (BOOL)kiiInitializeAccount {
+    KiiUser *user = [KiiUser currentUser];
+    KiiError *error;
+
+    
     return YES;
 }
 
+- (BOOL)kiiFinalizeAccount {
+    return YES;
+}
 - (void)newObject {
     [KTLoader showLoader:@"create object..."];
     KiiObject *object = [self.bucket createObject];

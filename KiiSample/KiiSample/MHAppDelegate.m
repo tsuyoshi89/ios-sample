@@ -17,12 +17,12 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     
-    // Initialize the Kii SDK!
-    [Kii beginWithID:YOUR_KII_APP_ID
-              andKey:YOUR_KII_APP_KEY
-             andSite:kiiSiteJP];
+    [MHKiiHelper beginWithID:YOUR_KII_APP_ID
+                      andKey:YOUR_KII_APP_KEY
+                     andSite:kiiSiteJP
+               andFacebookID:YOUR_FACEBOOK_APP_ID];
     
-    [KiiManager sharedInstance];
+    [MHKiiHelper sharedInstance].delegate = [KiiManager sharedInstance];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     UINavigationController *vc = [[UINavigationController alloc] init];

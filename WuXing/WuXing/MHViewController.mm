@@ -85,9 +85,15 @@ GLfloat gCubeVertexData[216] =
     
     GLuint _vertexArray;
     GLuint _vertexBuffer;
+    
+    CFTimeInterval _lastTime;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
+
+#ifdef ENABLE_EAGLEVIEW
+@property (nonatomic, assign) float timeSinceLastUpdate;
+#endif
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -112,17 +118,21 @@ GLfloat gCubeVertexData[216] =
     [super viewDidLoad];
     
     EAGLContext *context;
+#ifdef ENABLE_CUSTOMDRAW
     //context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     if (!context) {
         context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
     }
+#else
+    context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+#endif
     if (!context) {
         NSLog(@"Failed to create ES context");
     }
     
     self.context = context;
     
-#ifdef USE_OLD_CODE
+#ifdef ENABLE_EAGLEVIEW
     _animating = FALSE;
     _displayLinkSupported = FALSE;
     _animationFrameInterval = 1;
@@ -140,11 +150,13 @@ GLfloat gCubeVertexData[216] =
 	if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending) {
 		_displayLinkSupported = TRUE;
     }
-#else
+    _lastTime = CFAbsoluteTimeGetCurrent();
+#else // ENABLE_EAGLEVIEW
     GLKView *view = (GLKView *)self.view;
     view.context = self.context;
     view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
-#endif
+    
+#endif // ENABLE_EAGLEVIEW
     
     [self setupGL];
 }
@@ -158,7 +170,7 @@ GLfloat gCubeVertexData[216] =
     }
 }
 
-#ifdef USE_OLD_CODE
+#ifdef ENABLE_EAGLEVIEW
 - (NSInteger)animationFrameInterval {
 	return _animationFrameInterval;
 }
@@ -185,13 +197,13 @@ GLfloat gCubeVertexData[216] =
 			/*
 			 CADisplayLink is API new in iOS 3.1. Compiling against earlier versions will result in a warning, but can be dismissed if the system version runtime check for CADisplayLink exists in -awakeFromNib. The runtime check ensures this code will not be called in system versions earlier than 3.1.
              */
-			_displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(drawFrame)];
+			_displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(update)];
 			[_displayLink setFrameInterval:_animationFrameInterval];
 			
 			// The run loop will retain the display link on add.
 			[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 		} else {
-			_animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * _animationFrameInterval) target:self selector:@selector(drawFrame) userInfo:nil repeats:TRUE];
+			_animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((1.0 / 60.0) * _animationFrameInterval) target:self selector:@selector(update) userInfo:nil repeats:TRUE];
         }
 		_animating = TRUE;
 	}
@@ -210,22 +222,18 @@ GLfloat gCubeVertexData[216] =
 	}
 }
 
-- (void)drawFrame {
 
-	[(EAGLView *)self.view setFramebuffer];
-
-    glClearColor(0.7, 0.7, 0.7, 1);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-    CGRect bounds = self.view.bounds;
-    CGFloat aspect = bounds.size.width /  bounds.size.height;
-    
-    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
-                           0.5, 1.0f, 1.0f, 1.0f);
-
-	[(EAGLView *)self.view presentFramebuffer];
+- (void)viewWillAppear:(BOOL)animated {
+	[self startAnimation];
+	[super viewWillAppear:animated];
 }
-#endif /* USE_OLD_CODE */
+
+- (void)viewWillDisappear:(BOOL)animated {
+	[self stopAnimation];
+	[super viewWillDisappear:animated];
+}
+
+#endif /* ENABLE_EAGLEVIEW */
 
 - (void)didReceiveMemoryWarning
 {
@@ -251,7 +259,8 @@ GLfloat gCubeVertexData[216] =
     
     glContext = self.context;
     glProgram = _program;
-#if 1
+    
+#ifdef ENABLE_CUSTOMDRAW
     // OpenGL ESの初期化（2.0, 1.1に共通の初期化）
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -295,12 +304,12 @@ GLfloat gCubeVertexData[216] =
 {
     [EAGLContext setCurrentContext:self.context];
     
+#ifdef ENABLE_CUSTOMDRAW
     if (_texture) {
         glDeleteTextures(1, &_texture);
         _texture = 0;
     }
-
-#if 0
+#else
     glDeleteBuffers(1, &_vertexBuffer);
     glDeleteVertexArraysOES(1, &_vertexArray);
 #endif
@@ -313,22 +322,58 @@ GLfloat gCubeVertexData[216] =
     }
 }
 
-#ifdef USE_OLD_CODE
-- (void)viewWillAppear:(BOOL)animated {
-	[self startAnimation];
-	[super viewWillAppear:animated];
+- (void)renderScene {
+#ifdef ENABLE_CUSTOMDRAW
+    
+    glClearColor(0.7, 0.7, 0.7, 1);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    
+    CGRect bounds = self.view.bounds;
+    CGFloat aspect = bounds.size.width /  bounds.size.height;
+    
+    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
+                           0.5, 1.0f, 1.0f, 1.0f);
+
+    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
+                           0.5, 1.0f, 1.0f, 1.0f);
+    
+#else
+    glClearColor(0.65f, 0.65f, 0.65f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glBindVertexArrayOES(_vertexArray);
+    
+    // Render the object with GLKit
+    [self.effect prepareToDraw];
+    
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    
+    // Render the object again with ES2
+    glUseProgram(_program);
+    
+    glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _modelViewProjectionMatrix.m);
+    glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
+    
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+#endif
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-	[self stopAnimation];
-	[super viewWillDisappear:animated];
-}
-#endif
 
 #pragma mark - GLKView and GLKViewController delegate methods
 
+
 - (void)update {
-#if 0
+
+#ifdef ENABLE_EAGLEVIEW
+    CFTimeInterval time = CFAbsoluteTimeGetCurrent();
+    self.timeSinceLastUpdate = (time - _lastTime);
+    _lastTime = time;
+
+#endif
+    
+#ifdef ENABLE_CUSTOMDRAW
+    
+#else
     float aspect = fabsf(self.view.bounds.size.width / self.view.bounds.size.height);
     GLKMatrix4 projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(65.0f), aspect, 0.1f, 100.0f);
     
@@ -354,38 +399,19 @@ GLfloat gCubeVertexData[216] =
     _modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelViewMatrix);
     
     _rotation += self.timeSinceLastUpdate * 0.5f;
-#endif
+#endif /* ENABLE_CUSTOMDRAW */
+    
+#ifdef ENABLE_EAGLEVIEW
+    [(EAGLView *)self.view setFramebuffer];
+    [self renderScene];
+    [(EAGLView *)self.view presentFramebuffer];
+#endif /* ENBLE_EAGLEVIEW */
+
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
 {
-    glClearColor(0.65f, 0.65f, 0.65f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#if 1
-    
-    CGRect bounds = self.view.bounds;
-    CGFloat aspect = bounds.size.width /  bounds.size.height;
-    
-    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
-                           0.5, 1.0f, 1.0f, 1.0f);
-
-#else
-    
-    glBindVertexArrayOES(_vertexArray);
-    
-    // Render the object with GLKit
-    [self.effect prepareToDraw];
-    
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    
-    // Render the object again with ES2
-    glUseProgram(_program);
-    
-    glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _modelViewProjectionMatrix.m);
-    glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
-    
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-#endif
+    [self renderScene];
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation

@@ -9,7 +9,10 @@
 #import <UIKit/UIKit.h>
 //#import <GLKit/GLKit.h>
 
+#ifdef ENABLE_EAGLEVIEW
+@interface MHViewController : UIViewController
+#else
 @interface MHViewController : GLKViewController
-//@interface HMViewController :F UIViewController
+#endif
 
 @end

@@ -9,6 +9,9 @@
 #ifndef WuXing_common_h
 #define WuXing_common_h
 
+#define ENABLE_EAGLEVIEW
+#define ENABLE_CUSTOMDRAW
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -17,6 +17,17 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     
+#define YOUR_FACEBOOK_APP_ID @"255846174568822"
+#if 0
+#define YOUR_KII_APP_ID @"b1de7c54"
+#define YOUR_KII_APP_KEY @"aad3dfa037b9189f1cb4569ec154e865"
+#else//emon schat2
+#define YOUR_KII_APP_ID @"38ef21a6"
+#define YOUR_KII_APP_KEY @"9b2377bf742b390e6f88003f403b7386"
+#endif
+
+    NSLog(@"sub:%@", [KiiError errorWithCode:@"test" andMessage:@"message-test"]);
+    
     [MHKiiHelper beginWithID:YOUR_KII_APP_ID
                       andKey:YOUR_KII_APP_KEY
                      andSite:kiiSiteJP
@@ -31,6 +42,7 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
     return YES;
 }
 

@@ -117,6 +117,16 @@
             case MHKiiLoginResultFirstLogin:
                 [self query];
             case MHKiiLoginResultSuccess:
+            {
+                KiiUser *user = [KiiUser userWithURI:[KiiUser getObjectURI:@"bc326171-ea85-4717-a614-cb252217ddd1"]];
+                [user refreshWithBlock:^(KiiUser *user, NSError *error) {
+                    NSLog(@"refresh uesr:%@", error);
+                    NSLog(@"user uuid:%@", user.uuid);
+                    NSLog(@"user email:%@", user.email);
+                    NSLog(@"user username:%@", user.username);
+                }];
+
+            }
                 break;
             case MHKiiLoginResultSetupError:
             {
@@ -133,6 +143,7 @@
                 break;
         }
     }];
+    
 }
 
 - (void)userMode:(UISwitch *)sender {

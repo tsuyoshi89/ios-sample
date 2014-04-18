@@ -334,9 +334,7 @@ GLfloat gCubeVertexData[216] =
     MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
                            0.5, 1.0f, 1.0f, 1.0f);
 
-    MHTexture::drawTexture(_texture, 0,  0, 0.5, 0.5 * aspect,
-                           0.5, 1.0f, 1.0f, 1.0f);
-    
+   
 #else
     glClearColor(0.65f, 0.65f, 0.65f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
